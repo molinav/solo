@@ -7,6 +7,7 @@ import numpy as np
 ATTRS = ["p", "o3", "h2o", "a", "b", "w0", "g"]
 
 # Define the default values for optional atmospheric input arguments.
+DEFAULT_P = 1013.
 DEFAULT_W0 = 0.90
 DEFAULT_G = 0.85
 
@@ -112,4 +113,87 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         """
 
         return ABSCOEF
+
+    def tau_rayleigh(self, wvln_um):
+        """Return the Rayleigh optical depth for the given wavelengths.
+
+        The optical depth is computed by using Bates's formula:
+
+            tau_ray(wvln) = 1 / (117.2594 * (wvln / um)**4
+                                 - 1.3215 * (wvln / um)**2 + 0.000320
+                                 - 0.000076 * (wvln / um)**(-4)),
+
+        which is obtained for a location with atmospheric pressure equal
+        to 1 atm. For other pressures, the formula must be multiplied by
+        the factor (pressure / 1 atm).
+
+        Receive:
+
+            wvln_um : array-like, shape (nwvln,)
+                wavelengths in microns
+
+        Return:
+
+            tau : array-like, shape (nscen, nwvln)
+                Rayleigh optical depth for every scenario and wavelength
+
+        Raise:
+
+            ValueError
+                if the input 'wvln_um' does not have a proper shape
+        """
+
+        # Ensure shape of input argument.
+        if len(np.shape(wvln_um)) > 1:
+            raise ValueError("'wvln_um' must be 0- or 1-dimensional")
+
+        # Define the coefficients used in the formula.
+        c = [117.2594, -1.3215, 0.000320, -0.000076]
+
+        # Broadcast arrays before the computation of 'tau'.
+        wvln_um = np.atleast_1d(wvln_um)
+        pressure = np.atleast_2d(self.p).T
+
+        # Compute the optical thickness using Bates' formula, which must be
+        # corrected with the real pressure because the original formula is
+        # only valid for an atmospheric pressure of 1 atm.
+        div = c[0] * wvln_um**4 + c[1] * wvln_um**2 + c[2] + c[3] * wvln_um**-4
+        tau = (pressure / DEFAULT_P) / div
+        return tau[0] if self.nscen is 1 else tau
+
+    def tau_aerosols(self, wvln_um):
+        """Return the aerosol optical depth for the given wavelengths.
+
+        The optical depth is computed by using the Angstrom's formula:
+
+            tau_aer(wvln) = beta * (wvln / um)**(-alpha).
+
+        Receive:
+
+            wvln_um : array-like, shape (nwvln,)
+                wavelengths in microns
+
+        Return:
+
+            tau : array-like, shape (nscen, nwvln)
+                aerosol optical depth for every scenario and wavelength
+
+        Raise:
+
+            ValueError
+                if the input 'wvln_um' does not have a proper shape
+        """
+
+        # Ensure shape of input argument.
+        if len(np.shape(wvln_um)) > 1:
+            raise ValueError("'wvln_um' must be 0- or 1-dimensional")
+
+        # Broadcast arrays before the computation of 'tau'.
+        wvln_um = np.atleast_1d(wvln_um)
+        alpha = np.atleast_2d(self.a).T
+        beta = np.atleast_2d(self.b).T
+
+        # Compute the optical thickness using Angstrom's formula.
+        tau = beta * wvln_um**(-alpha)
+        return tau[0] if self.nscen is 1 else tau
 
