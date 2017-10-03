@@ -26,29 +26,60 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         nscen : int
             number of scenarios
 
-        p : array-like, (nscen,)
+        p : array-like, shape (nscen,)
             atmospheric pressure at the viewing position in hPa
 
-        o3 : array-like, (nscen,)
+        o3 : array-like, shape (nscen,)
             vertical ozone content in DU
 
-        h2o : array-like, (nscen,)
+        h2o : array-like, shape (nscen,)
             total amount of water vapour in cm-pr
 
-        a : array-like, (nscen,)
+        a : array-like, shape (nscen,)
             Angstrom alpha parameter
 
-        b : array-like, (nscen,)
+        b : array-like, shape (nscen,)
             Angstrom beta parameter
 
-        w0 : array-like, (nscen,)
+        w0 : array-like, shape (nscen,)
             single scattering albedo
 
-        g : array-like, (nscen,)
+        g : array-like, shape (nscen,)
             aerosol asymmetry parameter
     """
 
     def __new__(cls, p, o3, h2o, a, b, w0=None, g=None):
+        """Return a new instance of Atmosphere.
+
+        Receive:
+
+            p : array-like, shape (nscen,)
+                atmospheric pressure at the viewing position in hPa
+            o3 : array-like, shape (nscen,)
+                vertical ozone content in DU
+            h2o : array-like, shape (nscen,)
+                total amount of water vapour in cm-pr
+            a : array-like, shape (nscen,)
+                Angstrom alpha parameter
+            b : array-like, shape (nscen,)
+                Angstrom beta parameter
+            w0 : array-like, shape (nscen,)
+                single scattering albedo, default given by DEFAULT_W0
+            g : array-like, shape (nscen,)
+                aerosol asymmetry parameter, default given by DEFAULT_G
+
+        Return:
+
+            atm : Atmosphere
+                instance of Atmosphere based on the input parameters
+
+        Raise:
+
+            AttributeError
+                if input arguments have inconsistent or wrong shapes
+            ValueError
+                if the input arguments are out of range
+        """
 
         # Ensure that the input arguments have consistent shapes and sizes.
         items = [p, o3, h2o, a, b] + [x for x in [w0, g] if x is not None]

@@ -14,26 +14,26 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         nscen : int
             number of scenarios
 
-        day : array-like, (nscen,)
+        day : array-like, shape (nscen,)
             Julian day ranged from 1 to 366
 
-        day_angle : array-like, (nscen,)
+        day_angle : array-like, shape (nscen,)
             angle between the Earth-Sun line on 1st January and the same
             line for the Julian days corresponding to the scenarios,
             ranged from 0 to 2 * np.pi rad
 
-        lat : array-like, (nscen,)
+        lat : array-like, shape (nscen,)
             latitude at the viewing positions in radians, ranged from
             -np.pi / 2 to +np.pi / 2 rad
 
-        lon : array-like, (nscen,)
+        lon : array-like, shape (nscen,)
             longitude at the viewing positions in radians, ranged from
             -np.pi to +np.pi rad
 
-        sza : array-like, (nscen,)
+        sza : array-like, shape (nscen,)
             solar zenith angles in radians, ranged from 0 to +np.pi rad
 
-        mu0 : array-like, (nscen,)
+        mu0 : array-like, shape (nscen,)
             cosines of the solar zenith angle, ranged from -1 to +1
     """
 
@@ -66,7 +66,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             AttributeError
                 if input arguments have inconsistent or wrong shapes
             ValueError
-                if mode is not equal to 'deg' or 'rad'
+                if mode is not equal to 'deg' or 'rad' or the input
+                arguments are out of range
         """
 
         # Ensure that the input arguments have consistent shapes and sizes.
