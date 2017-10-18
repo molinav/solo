@@ -228,3 +228,48 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         tau = beta * wvln_um**(-alpha)
         return tau[0] if self.nscen is 1 else tau
 
+    def trn_ozone(self, wvln, mu0):
+        """Return the transmittance due to ozone absorption.
+
+        The transmittance is computed by using the formula:
+
+            tau_o3(wvln) = np.exp(-xsec_o3(wvln) * amount_o3 / mu0),
+
+        where xsec_o3(wvln) denotes the ozone cross sections in cm2,
+        the amount of ozone is given in molecules per cm2 and mu0 is
+        the cosine of the solar zenith angle.
+
+        Receive:
+
+            wvln : array-like, shape (nwvln,)
+                wavelengths in nanometers
+
+        Return:
+
+            tau : array-like, shape (nscen, nwvln)
+                ozone optical depth for every scenario and wavelength
+
+        Raise:
+
+            ValueError
+                if the input 'wvln' does not have a proper shape
+        """
+
+        # Ensure shape of input argument.
+        if len(np.shape(wvln)) > 1:
+            raise ValueError("'wvln' must be 0- or 1-dimensional")
+        if len(np.shape(mu0)) > 1:
+            raise ValueError("'mu0' must be 0- or 1-dimensional")
+
+        # Compute the absorption cross sections for ozone at the given input
+        # wavelengths by using linear interpolation.
+        ozone_xsec = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 3]]))
+        mu0 = np.atleast_1d(mu0)
+
+        # Convert the ozone amount from DU to molecules per m2 and then to
+        # molecules per cm2.
+        ozone_amount = np.atleast_2d(self.o3 * 2.687E20 * 1E-4).T
+
+        trn = np.exp(-ozone_xsec * ozone_amount / mu0)
+        return trn[0] if self.nscen is 1 else trn
+
