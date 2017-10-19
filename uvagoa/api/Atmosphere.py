@@ -183,14 +183,14 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         # Broadcast arrays before the computation of 'tau'.
         wvln_um = np.atleast_1d(wvln_um)
-        pressure = np.atleast_2d(self.p).T
+        pressure = np.atleast_1d(self.p)[:, None]
 
         # Compute the optical thickness using Bates' formula, which must be
         # corrected with the real pressure because the original formula is
         # only valid for an atmospheric pressure of 1 atm.
         div = c[0] * wvln_um**4 + c[1] * wvln_um**2 + c[2] + c[3] * wvln_um**-4
         tau = (pressure / DEFAULT_P) / div
-        return tau[0] if self.nscen is 1 else tau
+        return np.squeeze(tau)
 
     def tau_aerosols(self, wvln_um):
         """Return the aerosol optical depth for the given wavelengths.
@@ -221,12 +221,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         # Broadcast arrays before the computation of 'tau'.
         wvln_um = np.atleast_1d(wvln_um)
-        alpha = np.atleast_2d(self.a).T
-        beta = np.atleast_2d(self.b).T
+        alpha = np.atleast_1d(self.a)[:, None]
+        beta = np.atleast_1d(self.b)[:, None]
 
         # Compute the optical thickness using Angstrom's formula.
         tau = beta * wvln_um**(-alpha)
-        return tau[0] if self.nscen is 1 else tau
+        return np.squeeze(tau)
 
     def trn_ozone(self, wvln, mu0):
         """Return the transmittance due to ozone absorption.
@@ -265,16 +265,17 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("'mu0' must be 0- or 1-dimensional")
 
         # Compute the absorption cross sections for ozone at the given input
-        # wavelengths by using linear interpolation.
+        # wavelengths by using linear interpolation, and convert them to
+        # absorption coefficients in cm-1 by using Loschmidt's number.
         ozone_xsec = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 3]]))
-        mu0 = np.atleast_1d(mu0)
+        ozone_coef = (2.687E19 * ozone_xsec)
+        mu0 = np.atleast_1d(mu0)[:, None]
 
-        # Convert the ozone amount from DU to molecules per m2 and then to
-        # molecules per cm2.
-        ozone_amount = np.atleast_2d(self.o3 * 2.687E20 * 1E-4).T
+        # Convert from ozone amount in DU to ozone absorption path in cm.
+        ozone_path = np.atleast_1d(1E-3 * self.o3)[:, None, None]
 
-        trn = np.exp(-ozone_xsec * ozone_amount / mu0)
-        return trn[0] if self.nscen is 1 else trn
+        trn = np.exp(-ozone_coef * ozone_path / mu0)
+        return np.squeeze(trn)
 
     def trn_oxygen(self, wvln, mu0):
         """Return the transmittance due to molecular oxygen absorption.
@@ -315,12 +316,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         # Compute the absorption coefficients for oxygen at the given input
         # wavelengths by using linear interpolation.
         oxygen_coef = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 4]]))
-        mu0 = np.atleast_1d(mu0)
+        mu0 = np.atleast_1d(mu0)[:, None]
 
         # Declare the oxygen path and the oxygen exponent as constants.
         oxygen_path = 0.209 * 173200
         oxygen_exp = 0.5641
 
         trn = np.exp(-(oxygen_coef * oxygen_path / mu0)**oxygen_exp)
-        return trn
+        return np.squeeze(trn)
 
