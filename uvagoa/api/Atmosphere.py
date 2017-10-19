@@ -273,3 +273,34 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         trn = np.exp(-ozone_xsec * ozone_amount / mu0)
         return trn[0] if self.nscen is 1 else trn
 
+    def trn_oxygen(self, wvln, mu0):
+        """Return the transmittance due to molecular oxygen absorption.
+
+        The transmittance is computed by using the formula:
+
+            T(wvln) = np.exp(-(kabs_o2(wvln) * path_o2 / mu0)**a)
+
+        where kabs_o2(wvln) denotes the oxygen absorption coefficients
+        in cm-1, path_o2 is the oxygen path given in cm, mu0 is the
+        cosine of the solar zenith angle and a is an empirical exponent,
+        which is equal to 0.5641 for the molecular oxygen.
+        """
+
+        # Ensure shape of input argument.
+        if len(np.shape(wvln)) > 1:
+            raise ValueError("'wvln' must be 0- or 1-dimensional")
+        if len(np.shape(mu0)) > 1:
+            raise ValueError("'mu0' must be 0- or 1-dimensional")
+
+        # Compute the absorption coefficients for oxygen at the given input
+        # wavelengths by using linear interpolation.
+        oxygen_coef = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 4]]))
+        mu0 = np.atleast_1d(mu0)
+
+        # Declare the oxygen path and the oxygen exponent as constants.
+        oxygen_path = 0.209 * 173200
+        oxygen_exp = 0.5641
+
+        trn = np.exp(-(oxygen_coef * oxygen_path / mu0)**oxygen_exp)
+        return trn
+
