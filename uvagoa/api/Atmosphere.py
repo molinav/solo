@@ -53,19 +53,19 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         Receive:
 
-            p : array-like, shape (nscen,)
+            p : array-like, shape (nscen?,)
                 atmospheric pressure at the viewing position in hPa
-            o3 : array-like, shape (nscen,)
+            o3 : array-like, shape (nscen?,)
                 vertical ozone content in DU
-            h2o : array-like, shape (nscen,)
-                total amount of water vapour in cm-pr
-            a : array-like, shape (nscen,)
+            h2o : array-like, shape (nscen?,)
+                total amount of water vapour in cm
+            a : array-like, shape (nscen?,)
                 Angstrom alpha parameter
-            b : array-like, shape (nscen,)
+            b : array-like, shape (nscen?,)
                 Angstrom beta parameter
-            w0 : array-like, shape (nscen,)
+            w0 : array-like, shape (nscen?,)
                 single scattering albedo, default given by DEFAULT_W0
-            g : array-like, shape (nscen,)
+            g : array-like, shape (nscen?,)
                 aerosol asymmetry parameter, default given by DEFAULT_G
 
         Return:
@@ -156,16 +156,16 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         which is obtained for a location with atmospheric pressure equal
         to 1 atm. For other pressures, the formula must be multiplied by
-        the factor (pressure / 1 atm).
+        the factor (pressure / 1013 hPa).
 
         Receive:
 
-            wvln_um : array-like, shape (nwvln,)
+            wvln_um : array-like, shape (nwvln?,)
                 wavelengths in microns
 
         Return:
 
-            tau : array-like, shape (nscen, nwvln)
+            tau : array-like, shape (nscen?, nwvln?)
                 Rayleigh optical depth for every scenario and wavelength
 
         Raise:
@@ -201,12 +201,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         Receive:
 
-            wvln_um : array-like, shape (nwvln,)
+            wvln_um : array-like, shape (nwvln?,)
                 wavelengths in microns
 
         Return:
 
-            tau : array-like, shape (nscen, nwvln)
+            tau : array-like, shape (nscen?, nwvln?)
                 aerosol optical depth for every scenario and wavelength
 
         Raise:
@@ -233,21 +233,24 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         The transmittance is computed by using the formula:
 
-            tau_o3(wvln) = np.exp(-xsec_o3(wvln) * amount_o3 / mu0),
+            trn_o3(wvln) = np.exp(-kabs_o3(wvln) * path_o3 / mu0),
 
-        where xsec_o3(wvln) denotes the ozone cross sections in cm2,
-        the amount of ozone is given in molecules per cm2 and mu0 is
-        the cosine of the solar zenith angle.
+        where 'kabs_o3' denotes the ozone absorption coefficients
+        in cm-1, 'path_o3' is the ozone absorption path given in cm
+        and 'mu0' is the cosine of the solar zenith angle.
 
         Receive:
 
-            wvln : array-like, shape (nwvln,)
+            wvln : array-like, shape (nwvln?,)
                 wavelengths in nanometers
+            mu0 : array-like, shape (ngeo?,)
+                cosines of the solar zenith angle
 
         Return:
 
-            tau : array-like, shape (nscen, nwvln)
-                ozone optical depth for every scenario and wavelength
+            trn : array-like, shape (nscen?, ngeo?, nwvln)
+                ozone transmittance for every scenario, geometry and
+                wavelength
 
         Raise:
 
@@ -255,7 +258,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 if the input 'wvln' does not have a proper shape
         """
 
-        # Ensure shape of input argument.
+        # Ensure shape of the input arguments.
         if len(np.shape(wvln)) > 1:
             raise ValueError("'wvln' must be 0- or 1-dimensional")
         if len(np.shape(mu0)) > 1:
@@ -278,15 +281,32 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         The transmittance is computed by using the formula:
 
-            T(wvln) = np.exp(-(kabs_o2(wvln) * path_o2 / mu0)**a)
+            trn(wvln) = np.exp(-(kabs_o2(wvln) * path_o2 / mu0)**a),
 
-        where kabs_o2(wvln) denotes the oxygen absorption coefficients
-        in cm-1, path_o2 is the oxygen path given in cm, mu0 is the
-        cosine of the solar zenith angle and a is an empirical exponent,
-        which is equal to 0.5641 for the molecular oxygen.
+        where 'kabs_o2' denotes the oxygen absorption coefficients
+        in cm-1, 'path_o2' is the oxygen absorption path given in cm,
+        'mu0' is the cosine of the solar zenith angle and a is an
+        empirical exponent (equal to 0.5641 for the molecular oxygen).
+
+        Receive:
+
+            wvln : array-like, shape (nwvln?,)
+                wavelengths in nanometers
+            mu0 : array-like, shape (ngeo?,)
+                cosines of the solar zenith angle
+
+        Return:
+
+            trn : array-like, shape (ngeo?, nwvln?)
+                oxygen transmittance for every geometry and wavelength
+
+        Raise:
+
+            ValueError
+                if 'wvln' or 'mu0' have invalid shapes
         """
 
-        # Ensure shape of input argument.
+        # Ensure shape of the input arguments.
         if len(np.shape(wvln)) > 1:
             raise ValueError("'wvln' must be 0- or 1-dimensional")
         if len(np.shape(mu0)) > 1:
