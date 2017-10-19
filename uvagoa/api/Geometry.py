@@ -11,29 +11,29 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
     Every instance allows the access to the following properties:
 
-        nscen : int
+        ngeo : int
             number of scenarios
 
-        day : array-like, shape (nscen,)
+        day : array-like, shape (ngeo?,)
             Julian day ranged from 1 to 366
 
-        day_angle : array-like, shape (nscen,)
+        day_angle : array-like, shape (ngeo?,)
             angle between the Earth-Sun line on 1st January and the same
             line for the Julian days corresponding to the scenarios,
             ranged from 0 to 2 * np.pi rad
 
-        lat : array-like, shape (nscen,)
+        lat : array-like, shape (ngeo?,)
             latitude at the viewing positions in radians, ranged from
             -np.pi / 2 to +np.pi / 2 rad
 
-        lon : array-like, shape (nscen,)
+        lon : array-like, shape (ngeo?,)
             longitude at the viewing positions in radians, ranged from
             -np.pi to +np.pi rad
 
-        sza : array-like, shape (nscen,)
+        sza : array-like, shape (ngeo?,)
             solar zenith angles in radians, ranged from 0 to +np.pi rad
 
-        mu0 : array-like, shape (nscen,)
+        mu0 : array-like, shape (ngeo?,)
             cosines of the solar zenith angle, ranged from -1 to +1
     """
 
@@ -42,13 +42,13 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Receive:
 
-            lat : array-like, (nscen,)
+            lat : array-like, (ngeo?,)
                 latitude at the viewing positions
-            lon : array-like, (nscen,)
+            lon : array-like, (ngeo?,)
                 longitude at the viewing positions
-            sza : array-like, (nscen,)
+            sza : array-like, (ngeo?,)
                 solar zenith angles
-            day : array-like, (nscen,)
+            day : array-like, (ngeo?,)
                 Julian day
             mode : str
                 if 'deg', input angles are provided in degrees; if 'rad',
@@ -115,15 +115,15 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Return:
 
-            day_angle : array-like, shape (nscen,)
+            day_angle : array-like, shape (ngeo?,)
                 day angle for every scenario's Julian day
         """
 
         return 2 * np.pi * (self.day - 1) / 365
 
     @property
-    def nscen(self):
-        """Return the number of scenarios stored within the instance."""
+    def ngeo(self):
+        """Return the number of geometries stored within the instance."""
 
         shp = np.shape(self.mu0)
         return shp[0] if shp else 1
@@ -146,7 +146,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Return:
 
-            geo_factor : array-like, shape (nscen,)
+            geo_factor : array-like, shape (ngeo?,)
                 geometric factor for every scenario
         """
 
