@@ -145,7 +145,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         return ABSCOEF
 
-    def tau_rayleigh(self, wvln_um):
+    def tau_rayleigh(self, wvln_um, squeeze=True, return_albedo=False):
         """Return the Rayleigh optical depth for the given wavelengths.
 
         The optical depth is computed by using Bates's formula:
@@ -162,23 +162,37 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             wvln_um : array-like, shape (nwvln?,)
                 wavelengths in microns
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
+            return_albedo : bool, optional
+                if True, return also the Rayleigh contribution to the
+                atmospheric albedo (default False)
 
         Return:
 
             tau : array-like, shape (nscen?, nwvln?)
                 Rayleigh optical depth for every scenario and wavelength
+            salb : array-like, shape (nscen?, nwvln?), optional
+                Rayleigh contribution to the atmospheric albedo
 
         Raise:
 
             ValueError
                 if the input 'wvln_um' does not have a proper shape
+            TypeError
+                if 'squeeze' or 'return_albedo' are not boolean flags
         """
 
-        # Ensure shape of input argument.
+        # Ensure the shape and type of the input arguments.
         if len(np.shape(wvln_um)) > 1:
             raise ValueError("'wvln_um' must be 0- or 1-dimensional")
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
+        if not isinstance(return_albedo, bool):
+            raise TypeError("'return_albedo' must be a bool")
 
-        # Define the coefficients used in the formula.
+        # Define the coefficients used in Bates' formula.
         c = [117.2594, -1.3215, 0.000320, -0.000076]
 
         # Broadcast arrays before the computation of 'tau'.
@@ -188,9 +202,23 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         # Compute the optical thickness using Bates' formula, which must be
         # corrected with the real pressure because the original formula is
         # only valid for an atmospheric pressure of 1 atm.
-        div = c[0] * wvln_um**4 + c[1] * wvln_um**2 + c[2] + c[3] * wvln_um**-4
+        wvln_um2 = wvln_um**2
+        wvln_um4 = wvln_um2**2
+        div = c[0] * wvln_um4 + c[1] * wvln_um2 + c[2] + c[3] / wvln_um4
         tau = (pressure / DEFAULT_P) / div
-        return np.squeeze(tau)
+
+        # If requested, calc Rayleigh contribution to the atmospheric albedo.
+        if return_albedo:
+            salb = tau * (1. - np.exp(-2. * tau)) / (2. + tau)
+            salb = (salb,)
+        else:
+            salb = ()
+
+        # If requested, squeeze the length-1 axes from the output arrays.
+        out = (tau,) + salb
+        if bool(squeeze):
+            out = tuple(np.squeeze(x) for x in out)
+        return out if len(out) > 1 else out[0]
 
     def tau_aerosols(self, wvln_um):
         """Return the aerosol optical depth for the given wavelengths.
