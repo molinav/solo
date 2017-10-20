@@ -220,7 +220,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             out = tuple(np.squeeze(x) for x in out)
         return out if len(out) > 1 else out[0]
 
-    def tau_aerosols(self, wvln_um):
+    def tau_aerosols(self, wvln_um, squeeze=True, return_albedo=False):
         """Return the aerosol optical depth for the given wavelengths.
 
         The optical depth is computed by using the Angstrom's formula:
@@ -231,21 +231,35 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             wvln_um : array-like, shape (nwvln?,)
                 wavelengths in microns
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
+            return_albedo : bool, optional
+                if True, return also the aerosol contribution to the
+                atmospheric albedo (default False)
 
         Return:
 
             tau : array-like, shape (nscen?, nwvln?)
                 aerosol optical depth for every scenario and wavelength
+            salb : array-like, shape (nscen?, nwvln?), optional
+                aerosol contribution to the atmospheric albedo
 
         Raise:
 
             ValueError
                 if the input 'wvln_um' does not have a proper shape
+            TypeError
+                if 'squeeze' or 'return_albedo' are not boolean flags
         """
 
-        # Ensure shape of input argument.
+        # Ensure the shape and type of the input arguments.
         if len(np.shape(wvln_um)) > 1:
             raise ValueError("'wvln_um' must be 0- or 1-dimensional")
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
+        if not isinstance(return_albedo, bool):
+            raise TypeError("'return_albedo' must be a bool")
 
         # Broadcast arrays before the computation of 'tau'.
         wvln_um = np.atleast_1d(wvln_um)
@@ -253,8 +267,21 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         beta = np.atleast_1d(self.b)[:, None]
 
         # Compute the optical thickness using Angstrom's formula.
-        tau = beta * wvln_um**(-alpha)
-        return np.squeeze(tau)
+        tau = beta / wvln_um**alpha
+
+        # If requested, calc aerosol contribution to the atmospheric albedo.
+        if return_albedo:
+            g = np.atleast_1d((1 - self.g) * self.w0)[:, None]
+            salb = g * tau / (2. + g * tau) * (1. + np.exp(-g * tau))
+            salb = (salb,)
+        else:
+            salb = ()
+
+        # If requested, squeeze the length-1 axes from the output arrays.
+        out = (tau,) + salb
+        if bool(squeeze):
+            out = tuple(np.squeeze(x) for x in out)
+        return out if len(out) > 1 else out[0]
 
     def trn_ozone(self, wvln, mu0):
         """Return the transmittance due to ozone absorption.
