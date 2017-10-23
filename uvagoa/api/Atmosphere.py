@@ -477,6 +477,89 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             out = tuple(np.squeeze(x) for x in out)
         return out
 
+    def trn_mixture(self, wvln_um, mu0, squeeze=True, return_albedo=False,
+                    coupling=False):
+        """Return the transmittances for the Rayleigh-aerosols mixture.
+
+        The methos allows to consider these transmittance just as a
+        combination of independent processes (Rayleigh and aerosols),
+        but also as a process with coupling effects.
+
+        Receive:
+
+            wvln_um : array-like, shape (nwvln?,)
+                wavelengths in microns
+            mu0 : array-like, shape (ngeo?,)
+                cosine of solar zenith angles
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
+            return_albedo : bool, optional
+                if True, return also the atmospheric albedo
+                (default False)
+            coupling : bool, optional
+                if True, include Rayleigh-aerosol coupling effect;
+                (default False)
+
+        Return:
+
+            tglb : array-like, shape (nscen?, ngeo?, nwvln?)
+                mixture global transmittance for every scenario,
+                geometry and wavelength
+            tdir : array-like, shape (nscen?, ngeo?, nwvln?)
+                mixture direct transmittance for every scenario,
+                geometry and wavelength
+            tdif : array-like, shape (nscen?, ngeo?, nwvln?)
+                mixture diffuse transmittance for every scenario,
+                geometry and wavelength
+            salb : array-like, shape (nscen?, nwvln?), optional
+                atmospheric albedo
+
+        Raise:
+
+            ValueError
+                if the input 'wvln_um' or 'mu0' have invalid shape
+            TypeError
+                if 'squeeze', 'return_albedo' or 'coupling' are not
+                boolean flags
+        """
+
+        # Ensure the type of 'squeeze' and 'coupling'. The other arguments
+        # are already checked when calling the methods 'trn_rayleigh' and
+        # 'trn_aerosols'.
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
+        if not isinstance(coupling, bool):
+            raise TypeError("'coupling' must be a bool")
+
+        if coupling:
+            # Call aerosol transmittance method with coupling set to True.
+            args = [wvln_um, mu0, squeeze, return_albedo, True]
+            out = self.trn_aerosols(*args)
+            tglb, tdir, tdif = out[:3]
+            salb = (out[3],) if return_albedo else ()
+        else:
+            args = [wvln_um, mu0, False, return_albedo]
+            # Compute Rayleigh transmittances.
+            out = self.trn_rayleigh(*args)
+            tglb_ray, tdir_ray, tdif_ray = out[:3]
+            sray = out[3] if return_albedo else ()
+            # Compute aerosol transmittances.
+            out = self.trn_aerosols(*args)
+            tglb_aer, tdir_aer, tdif_aer = out[:3]
+            saer = out[3] if return_albedo else ()
+            # Compute mix transmittances without Rayleigh-aerosol coupling.
+            tglb = tglb_ray * tglb_aer
+            tdir = tdir_ray * tdir_aer
+            tdif = tglb - tdir
+            salb = (sray + saer,) if return_albedo else ()
+
+        # If requested, squeeze the length-1 axes from the output arrays.
+        out = (tglb, tdir, tdif) + salb
+        if bool(squeeze):
+            out = tuple(np.squeeze(x) for x in out)
+        return out
+
     def trn_water(self, wvln, mu0, squeeze=True):
         """Return the transmittance due to water vapour absorption.
 
