@@ -498,7 +498,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 if True, return also the atmospheric albedo
                 (default False)
             coupling : bool, optional
-                if True, include Rayleigh-aerosol coupling effect;
+                if True, include Rayleigh-aerosol coupling effect
                 (default False)
 
         Return:
