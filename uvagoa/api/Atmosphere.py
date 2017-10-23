@@ -283,7 +283,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             out = tuple(np.squeeze(x) for x in out)
         return out if len(out) > 1 else out[0]
 
-    def trn_ozone(self, wvln, mu0):
+    def trn_ozone(self, wvln, mu0, squeeze=True):
         """Return the transmittance due to ozone absorption.
 
         The transmittance is computed by using the formula:
@@ -300,6 +300,9 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in nanometers
             mu0 : array-like, shape (ngeo?,)
                 cosines of the solar zenith angle
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
 
         Return:
 
@@ -311,6 +314,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             ValueError
                 if the input 'wvln' does not have a proper shape
+            TypeError
+                if 'squeeze' is not a boolean flag
         """
 
         # Ensure shape of the input arguments.
@@ -318,6 +323,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("'wvln' must be 0- or 1-dimensional")
         if len(np.shape(mu0)) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
 
         # Compute the absorption cross sections for ozone at the given input
         # wavelengths by using linear interpolation, and convert them to
@@ -330,9 +337,9 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         ozone_path = np.atleast_1d(1E-3 * self.o3)[:, None, None]
 
         trn = np.exp(-ozone_coef * ozone_path / mu0)
-        return np.squeeze(trn)
+        return np.squeeze(trn) if squeeze else trn
 
-    def trn_oxygen(self, wvln, mu0):
+    def trn_oxygen(self, wvln, mu0, squeeze=True):
         """Return the transmittance due to molecular oxygen absorption.
 
         The transmittance is computed by using the formula:
@@ -350,16 +357,21 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in nanometers
             mu0 : array-like, shape (ngeo?,)
                 cosines of the solar zenith angle
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
 
         Return:
 
-            trn : array-like, shape (ngeo?, nwvln?)
+            trn : array-like, shape (1?, ngeo?, nwvln?)
                 oxygen transmittance for every geometry and wavelength
 
         Raise:
 
             ValueError
                 if 'wvln' or 'mu0' have invalid shapes
+            TypeError
+                if 'squeeze' is not a boolean flag
         """
 
         # Ensure shape of the input arguments.
@@ -367,6 +379,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("'wvln' must be 0- or 1-dimensional")
         if len(np.shape(mu0)) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
 
         # Compute the absorption coefficients for oxygen at the given input
         # wavelengths by using linear interpolation.
@@ -374,9 +388,9 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         mu0 = np.atleast_1d(mu0)[:, None]
 
         # Declare the oxygen path and the oxygen exponent as constants.
-        oxygen_path = 0.209 * 173200
+        oxygen_path = np.atleast_1d(0.209 * 173200)[:, None, None]
         oxygen_exp = 0.5641
 
         trn = np.exp(-(oxygen_coef * oxygen_path / mu0)**oxygen_exp)
-        return np.squeeze(trn)
+        return np.squeeze(trn) if squeeze else trn
 
