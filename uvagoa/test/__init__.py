@@ -12,6 +12,9 @@ UNITTEST_FOLDER = os.path.dirname(__file__)
 
 class UvagoaTest(unittest.TestCase):
 
+    def one(self, squeeze):
+        return () if squeeze else (1,)
+
     def setUp(self):
         """Set up the attributes needed for the test."""
 
