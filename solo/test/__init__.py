@@ -3,14 +3,14 @@ from __future__ import print_function
 import os.path
 import unittest
 import numpy as np
-from uvagoa.api import Geometry
-from uvagoa.api import Atmosphere
+from solo.api import Geometry
+from solo.api import Atmosphere
 
 
 UNITTEST_FOLDER = os.path.dirname(__file__)
 
 
-class UvagoaTest(unittest.TestCase):
+class SoloTest(unittest.TestCase):
 
     def one(self, squeeze):
         return () if squeeze else (1,)

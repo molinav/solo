@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
-from uvagoa.test import UvagoaTest
+from solo.test import SoloTest
 
 
-class TauTest(UvagoaTest):
+class TauTest(SoloTest):
 
     def testTauRayleigh_Atm0D_Val0D(self):
         shp0 = ()

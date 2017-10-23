@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
-from uvagoa.test import UvagoaTest
+from solo.test import SoloTest
 
 
-class TrnGasTest(UvagoaTest):
+class TrnGasTest(SoloTest):
 
     def calcObj1(self, atm, geo, wvln, squeeze):
         args = [wvln, geo.mu0, squeeze]
