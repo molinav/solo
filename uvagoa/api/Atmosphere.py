@@ -364,6 +364,119 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             out = tuple(np.squeeze(x) for x in out)
         return out
 
+    def trn_aerosols(self, wvln_um, mu0, squeeze=True, return_albedo=False,
+                     coupling=False):
+        """Return the aerosol transmittances.
+
+        The direct transmittance is just computed as:
+
+            tdir_aer(wvln) = np.exp(-tau_aer(wvln) / mu0),
+
+        while Ambartsumian's formulation is used for the global
+        transmittance assuming that w0 is not 1:
+
+            tglb_aer(wvln) = ((1 - r0**2) * np.exp(-K * tau_aer / mu0))
+                             / (1 - r0**2 * np.exp(-K * tau_aer / mu0)),
+
+        where:
+
+            K = np.sqrt((1 - w0) * (1 - w0 * g)),
+            r0 = (K - 1 + w0) / (K + 1 - w0),
+
+        and the diffuse transmittance is the difference between the
+        global and the direct transmittances:
+
+            tdif_aer(wvln) = tglb_aer - tdir_aer.
+
+        Receive:
+
+            wvln_um : array-like, shape (nwvln?,)
+                wavelengths in microns
+            mu0 : array-like, shape (ngeo?,)
+                cosine of solar zenith angles
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
+            return_albedo : bool, optional
+                if True, return also the aerosol contribution to the
+                atmospheric albedo (default False)
+            coupling : bool, optional
+                if True, include Rayleigh-aerosol coupling effect;
+                this parameter is intended only for internal use
+                (default False)
+
+        Return:
+
+            tglb : array-like, shape (nscen?, ngeo?, nwvln?)
+                aerosol global transmittance for every scenario,
+                geometry and wavelength
+            tdir : array-like, shape (nscen?, ngeo?, nwvln?)
+                aerosol direct transmittance for every scenario,
+                geometry and wavelength
+            tdif : array-like, shape (nscen?, ngeo?, nwvln?)
+                aerosol diffuse transmittance for every scenario,
+                geometry and wavelength
+            salb : array-like, shape (nscen?, nwvln?), optional
+                aerosol contribution to the atmospheric albedo
+
+        Raise:
+
+            ValueError
+                if the input 'wvln_um' or 'mu0' have invalid shape
+            TypeError
+                if 'squeeze', 'return_albedo' or 'coupling' are not
+                boolean flags
+        """
+
+        # Ensure the shape of 'mu0' and the type of 'squeeze' and 'coupling'.
+        # The other arguments are already checked when calling the method
+        # 'tau_aerosols'.
+        if len(np.shape(mu0)) > 1:
+            raise ValueError("'mu0' must be 0- or 1-dimensional")
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
+        if not isinstance(coupling, bool):
+            raise TypeError("'coupling' must be a bool")
+        mu0 = np.atleast_1d(mu0)[:, None]
+
+        # Compute the optical thickness and the atmospheric albedo.
+        args = [wvln_um, False, return_albedo]
+        out = self.tau_aerosols(*args)
+        tau, salb = (out[0], out[1]) if return_albedo else (out, ())
+        g, w0 = [np.atleast_1d(x)[:, None] for x in (self.g, self.w0)]
+
+        # If requested, Rayleigh contribution is coupled to the aerosols.
+        if coupling:
+            out = self.tau_rayleigh(*args)
+            tau_ray, sray = (out[0], out[1]) if return_albedo else (out, ())
+            tau_aer, saer = tau, salb
+            # Update the optical depth and the atmospheric albedo.
+            tau, salb = tau_ray + tau_aer, sray + saer
+            # Update the effective asymmetry parameter and single-scattering
+            # albedo due to Rayleigh-aerosol coupling.
+            g = (tau_aer * g) / tau
+            w0 = (tau_ray + w0 * tau_aer) / tau
+
+        # Reshape tau, g and w0 to the 3-dim space (nscen, ngeo, nwvln).
+        salb = (salb,)
+        tau, g, w0 = [x[:, None, :] for x in (tau, g, w0)]
+
+        # Compute intermediate parameters.
+        ak = np.sqrt((1. - w0) * (1. - w0 * g))
+        r0 = ((ak - 1. + w0) / (ak + 1. - w0))
+
+        # Compute direct, global and diffuse transmittances.
+        tdir = np.exp(-tau / mu0)
+        tdir_k = tdir**ak
+        tglb = (1. - r0**2) * tdir_k / (1. - (r0 * tdir_k)**2)
+        tdif = tglb - tdir
+
+        # If requested, squeeze the length-1 axes from the output arrays.
+        out = (tglb, tdir, tdif) + salb
+        if bool(squeeze):
+            out = tuple(np.squeeze(x) for x in out)
+        return out
+
     def trn_water(self, wvln, mu0, squeeze=True):
         """Return the transmittance due to water vapour absorption.
 
