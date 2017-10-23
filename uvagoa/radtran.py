@@ -71,11 +71,12 @@ def radtran(geo, atm, albedo, wvln=None, squeeze=True, coupling=False):
     # Convert wavelengths from nanometers to microns and adjust the TOA
     # irradiance to the actual Sun-Earth distance.
     wvln_um = 1E-3 * wvln
-    irr0 = irr0 * geo.geometric_factor()
+    irr0 = irr0 * geo.geometric_factor(squeeze=False)
 
     # Compute the transmittance due to Rayleigh and aerosols.
     args = [wvln_um, geo.mu0, False, True, coupling]
     tglb_mix, tdir_mix, tdif_mix, atm_alb = atm.trn_mixture(*args)
+    atm_alb = atm_alb[:, None, :]
 
     # Compute the transmittance due to gas absorption.
     args = [wvln, geo.mu0, False]
@@ -88,9 +89,10 @@ def radtran(geo, atm, albedo, wvln=None, squeeze=True, coupling=False):
     amp_factor = 1. / (1. - albedo * atm_alb)
 
     # Compute the BOA global, direct and diffuse irradiances.
-    irr_glb = irr0 * geo.mu0 * tglb_mix * tdir_gas * amp_factor
+    mu0 = np.atleast_1d(geo.mu0)[None, :, None]
+    irr_glb = irr0 * mu0 * tglb_mix * tdir_gas * amp_factor
     irr_dir = irr0 * tdir_mix * tdir_gas
-    irr_dif = irr_glb - irr_dir * geo.mu0
+    irr_dif = irr_glb - irr_dir * mu0
 
     # If requested, squeeze the length-1 axes from the output arrays.
     out = (irr_glb, irr_dir, irr_dif)
