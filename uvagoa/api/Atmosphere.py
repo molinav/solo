@@ -283,6 +283,62 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             out = tuple(np.squeeze(x) for x in out)
         return out if len(out) > 1 else out[0]
 
+    def trn_water(self, wvln, mu0, squeeze=True):
+        """Return the transmittance due to water vapour absorption.
+
+        The transmittance is computed by using the formula:
+
+            trn(wvln) = np.exp(-(kabs_h2o(wvln) * path_h2o / mu0)**a),
+
+        where 'kabs_o2' denotes the water vapour absorption coefficients
+        in cm-1, 'path_h2o' is the water vapour absorption path given in
+        cm, 'mu0' is the cosine of the solar zenith angle and a is an
+        empirical exponent (which depends on the wavelength for the
+        water vapour).
+
+        Receive:
+
+            wvln : array-like, shape (nwvln?,)
+                wavelengths in nanometers
+            mu0 : array-like, shape (ngeo?,)
+                cosines of the solar zenith angle
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
+
+        Return:
+
+            trn : array-like, shape (nscen?, ngeo?, nwvln?)
+                water vapour transmittance for every scenario, geometry
+                and wavelength
+
+        Raise:
+
+            ValueError
+                if 'wvln' or 'mu0' have invalid shapes
+            TypeError
+                if 'squeeze' is not a boolean flag
+        """
+
+        # Ensure the shape and type of the input arguments.
+        if len(np.shape(wvln)) > 1:
+            raise ValueError("'wvln' must be 0- or 1-dimensional")
+        if len(np.shape(mu0)) > 1:
+            raise ValueError("'mu0' must be 0- or 1-dimensional")
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
+
+        # Compute the absorption coefficients and exponents for water vapour
+        # at the given input wavelengths by using linear interpolation.
+        water_coef = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 1]]))
+        water_exp = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 2]]))
+        water_path = np.atleast_1d(self.h2o)[:, None, None]
+        mu0 = np.atleast_1d(mu0)[:, None]
+
+        trn = np.where(np.isclose(water_exp, 0.0), 1.0,
+                       np.exp(-(water_coef * water_path / mu0)**water_exp))
+        return np.squeeze(trn) if squeeze else trn
+
     def trn_ozone(self, wvln, mu0, squeeze=True):
         """Return the transmittance due to ozone absorption.
 
