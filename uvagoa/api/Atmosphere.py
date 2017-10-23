@@ -283,6 +283,87 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             out = tuple(np.squeeze(x) for x in out)
         return out if len(out) > 1 else out[0]
 
+    def trn_rayleigh(self, wvln_um, mu0, squeeze=True, return_albedo=False):
+        """Return the Rayleigh transmittances.
+
+        The direct transmittance is just computed as:
+
+            tdir_ray(wvln) = np.exp(-tau_ray(wvln) / mu0),
+
+        while Sobolev's formula is used for the global transmittance:
+
+            tglb_ray(wvln) = ((2/3 + mu0) + (4/3 - mu0) * tdir_ray))
+                             / (2/3 + tau_ray),
+
+        and the diffuse transmittance is the difference between the
+        global and the direct transmittances:
+
+            tdif_ray(wvln) = tglb_ray - tdir_ray.
+
+        Receive:
+
+            wvln_um : array-like, shape (nwvln?,)
+                wavelengths in microns
+            mu0 : array-like, shape (ngeo?,)
+                cosine of solar zenith angles
+            squeeze : bool, optional
+                if True, remove length-1 axes from the output arrays
+                (default True)
+            return_albedo : bool, optional
+                if True, return also the Rayleigh contribution to the
+                atmospheric albedo (default False)
+
+        Return:
+
+            tglb : array-like, shape (nscen?, ngeo?, nwvln?)
+                Rayleigh global transmittance for every scenario,
+                geometry and wavelength
+            tdir : array-like, shape (nscen?, ngeo?, nwvln?)
+                Rayleigh direct transmittance for every scenario,
+                geometry and wavelength
+            tdif : array-like, shape (nscen?, ngeo?, nwvln?)
+                Rayleigh diffuse transmittance for every scenario,
+                geometry and wavelength
+            salb : array-like, shape (nscen?, nwvln?), optional
+                Rayleigh contribution to the atmospheric albedo
+
+        Raise:
+
+            ValueError
+                if the input 'wvln_um' or 'mu0' have invalid shape
+            TypeError
+                if 'squeeze' or 'return_albedo' are not boolean flags
+        """
+
+        # Ensure the shape of 'mu0' and the type of 'squeeze'. The other
+        # arguments are checked when calling the method 'tau_rayleigh'.
+        if len(np.shape(mu0)) > 1:
+            raise ValueError("'mu0' must be 0- or 1-dimensional")
+        if not isinstance(squeeze, bool):
+            raise TypeError("'squeeze' must be a bool")
+        mu0 = np.atleast_1d(mu0)[:, None]
+
+        # Compute the optical thickness and the atmospheric albedo.
+        args = [wvln_um, False, return_albedo]
+        out = self.tau_rayleigh(*args)
+        tau, salb = (out[0], (out[1],)) if return_albedo else (out, ())
+
+        # Add the geometrical axis to 'tau' and compute the Rayleigh direct
+        # transmittance.
+        tau = tau[:, None, :]
+        tdir = np.exp(-tau / mu0)
+
+        # Compute the global and diffuse transmittances.
+        c = [2. / 3., 4. / 3.]
+        tglb = ((c[0] + mu0) + (c[1] - mu0) * tdir) / (c[1] + tau)
+        tdif = tglb - tdir
+
+        # If requested, squeeze the length-1 axes from the output arrays.
+        out = (tglb, tdir, tdif) + salb
+        if bool(squeeze):
+            out = tuple(np.squeeze(x) for x in out)
+        return out
+
     def trn_water(self, wvln, mu0, squeeze=True):
         """Return the transmittance due to water vapour absorption.
 
