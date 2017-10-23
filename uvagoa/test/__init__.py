@@ -35,9 +35,9 @@ class UvagoaTest(unittest.TestCase):
 
         # Create vectorised instances of Geometry, Atmosphere and albedo.
         self.geo1 = Geometry(
-            lat=np.asarray([self.geo0.lat, 35.45]),
-            lon=np.asarray([self.geo0.lon, 25.80]),
-            sza=np.asarray([self.geo0.sza, 15.5]),
+            lat=np.asarray([np.degrees(self.geo0.lat), 35.45]),
+            lon=np.asarray([np.degrees(self.geo0.lon), 25.80]),
+            sza=np.asarray([np.degrees(self.geo0.sza), 15.5]),
             day=np.asarray([self.geo0.day, 12]))
         self.atm1 = Atmosphere(
             p=np.asarray([self.atm0.p, 875.4, 925.3]),
