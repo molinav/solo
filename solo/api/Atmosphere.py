@@ -19,7 +19,7 @@ ABSCOEF.flags.writeable = False
 
 
 class Atmosphere(namedtuple("Atmosphere", ATTRS)):
-    """Class to define the geometric properties of the atmospheric view.
+    """Class to define the atmospheric properties.
 
     Every instance allows the access to the following properties:
 
@@ -27,7 +27,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             number of scenarios
 
         p : array-like, shape (nscen,)
-            atmospheric pressure at the viewing position in hPa
+            atmospheric surface pressure in hPa
 
         rho : array-like, shape (nscen,)
             surface albedo
@@ -57,7 +57,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         Receive:
 
             p : array-like, shape (nscen?,)
-                atmospheric pressure at the viewing position in hPa
+                atmospheric surface pressure in hPa
             rho : array-like, shape (nscen,)
                 surface albedo
             o3 : array-like, shape (nscen?,)
