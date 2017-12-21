@@ -364,7 +364,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         # Compute the global and diffuse transmittances.
         c = [2. / 3., 4. / 3.]
-        tglb = ((c[0] + mu0) + (c[1] - mu0) * tdir) / (c[1] + tau)
+        tglb = ((c[0] + mu0) + (c[0] - mu0) * tdir) / (c[1] + tau)
         tdif = tglb - tdir
 
         # If requested, squeeze the length-1 axes from the output arrays.
