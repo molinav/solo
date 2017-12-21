@@ -4,7 +4,7 @@ import os.path
 import numpy as np
 
 
-ATTRS = ["p", "o3", "h2o", "alpha", "beta", "w0", "g"]
+ATTRS = ["p", "rho", "o3", "h2o", "alpha", "beta", "w0", "g"]
 
 # Define the default values for optional atmospheric input arguments.
 DEFAULT_P = 1013.
@@ -29,6 +29,9 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         p : array-like, shape (nscen,)
             atmospheric pressure at the viewing position in hPa
 
+        rho : array-like, shape (nscen,)
+            surface albedo
+
         o3 : array-like, shape (nscen,)
             vertical ozone content in DU
 
@@ -48,13 +51,15 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             aerosol asymmetry parameter
     """
 
-    def __new__(cls, p, o3, h2o, alpha, beta, w0=None, g=None):
+    def __new__(cls, p, rho, o3, h2o, alpha, beta, w0=None, g=None):
         """Return a new instance of Atmosphere.
 
         Receive:
 
             p : array-like, shape (nscen?,)
                 atmospheric pressure at the viewing position in hPa
+            rho : array-like, shape (nscen,)
+                surface albedo
             o3 : array-like, shape (nscen?,)
                 vertical ozone content in DU
             h2o : array-like, shape (nscen?,)
@@ -82,7 +87,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         """
 
         # Ensure that the input arguments have consistent shapes and sizes.
-        items = [p, o3, h2o, alpha, beta]
+        items = [p, rho, o3, h2o, alpha, beta]
         items = items + [x for x in [w0, g] if x is not None]
         set_shapes = set(np.shape(x) for x in items)
         if len(set_shapes) > 1:
@@ -95,6 +100,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         # values for 'w0' and 'g' if they were not defined.
         if np.any(p < 0):
             raise ValueError("pressure out of range")
+        if np.any(rho < 0) or np.any(rho > 1):
+            raise ValueError("albedo out of range")
         if np.any(o3 < 0):
             raise ValueError("ozone out of range")
         if np.any(h2o < 0):
@@ -113,7 +120,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("asymmetry parameter out of range")
 
         # Return the new instance.
-        args = [cls, p, o3, h2o, alpha, beta, w0, g]
+        args = [cls, p, rho, o3, h2o, alpha, beta, w0, g]
         atm = super(Atmosphere, cls).__new__(*args)
         return atm
 

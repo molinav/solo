@@ -3,7 +3,7 @@ import os.path
 import numpy as np
 
 
-def radtran(geo, atm, albedo, wvln=None, squeeze=True, coupling=False):
+def radtran(geo, atm, wvln=None, squeeze=True, coupling=False):
     """Return the BOA irradiances based on an atmosphere and geometry.
 
     Receive:
@@ -14,8 +14,6 @@ def radtran(geo, atm, albedo, wvln=None, squeeze=True, coupling=False):
         atm : Atmosphere
             an instance of Atmosphere containing the relevant information
             of the atmospheric components
-        albedo : array-like, shape (nwvln?,)
-            surface albedo
         wvln : array-like, shape (nwvln?,), optional
             wavelengths in nanometers (default None, which means that
             the wavelengths are taken from the same file where the TOA
@@ -42,8 +40,7 @@ def radtran(geo, atm, albedo, wvln=None, squeeze=True, coupling=False):
     Raise:
 
         ValueError
-            if 'wvln' and 'albedo' have invalid shapes or cannot be
-            broadcasted
+            if 'wvln' has an invalid shape
         TypeError
             if 'squeeze' or 'coupling' are not boolean flags
     """
@@ -57,16 +54,8 @@ def radtran(geo, atm, albedo, wvln=None, squeeze=True, coupling=False):
         wvln = wvln0
     if len(np.shape(wvln)) > 1:
         raise ValueError("'wvln' must be 0- or 1-dimensional")
-    if len(np.shape(albedo)) > 1:
-        raise ValueError("'albedo' must be 0- or 1-dimensional")
     if not isinstance(squeeze, bool):
         raise TypeError("'squeeze' must be a bool")
-    try:
-        wvln, albedo = np.broadcast_arrays(wvln, albedo)
-    except ValueError as err:
-        err.__cause__ = None
-        err.args = ("cannot broadcast 'wvln' and 'albedo to a single shape'",)
-        raise err
 
     # Convert wavelengths from nanometers to microns and adjust the TOA
     # irradiance to the actual Sun-Earth distance.
@@ -86,7 +75,7 @@ def radtran(geo, atm, albedo, wvln=None, squeeze=True, coupling=False):
     tdir_gas = tdir_wat * tdir_ozo * tdir_oxy
 
     # Compute the amplification factor for the BOA global irradiance.
-    amp_factor = 1. / (1. - albedo * atm_alb)
+    amp_factor = 1. / (1. - atm.rho * atm_alb)
 
     # Compute the BOA global, direct and diffuse irradiances.
     mu0 = np.atleast_1d(geo.mu0)[None, :, None]
