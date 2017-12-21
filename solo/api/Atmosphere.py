@@ -4,7 +4,7 @@ import os.path
 import numpy as np
 
 
-ATTRS = ["p", "o3", "h2o", "a", "b", "w0", "g"]
+ATTRS = ["p", "o3", "h2o", "alpha", "beta", "w0", "g"]
 
 # Define the default values for optional atmospheric input arguments.
 DEFAULT_P = 1013.
@@ -35,10 +35,10 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         h2o : array-like, shape (nscen,)
             total amount of water vapour in cm-pr
 
-        a : array-like, shape (nscen,)
+        alpha : array-like, shape (nscen,)
             Angstrom alpha parameter
 
-        b : array-like, shape (nscen,)
+        beta : array-like, shape (nscen,)
             Angstrom beta parameter
 
         w0 : array-like, shape (nscen,)
@@ -48,7 +48,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             aerosol asymmetry parameter
     """
 
-    def __new__(cls, p, o3, h2o, a, b, w0=None, g=None):
+    def __new__(cls, p, o3, h2o, alpha, beta, w0=None, g=None):
         """Return a new instance of Atmosphere.
 
         Receive:
@@ -59,9 +59,9 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 vertical ozone content in DU
             h2o : array-like, shape (nscen?,)
                 total amount of water vapour in cm
-            a : array-like, shape (nscen?,)
+            alpha : array-like, shape (nscen?,)
                 Angstrom alpha parameter
-            b : array-like, shape (nscen?,)
+            beta : array-like, shape (nscen?,)
                 Angstrom beta parameter
             w0 : array-like, shape (nscen?,)
                 single scattering albedo, default given by DEFAULT_W0
@@ -82,7 +82,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         """
 
         # Ensure that the input arguments have consistent shapes and sizes.
-        items = [p, o3, h2o, a, b] + [x for x in [w0, g] if x is not None]
+        items = [p, o3, h2o, alpha, beta]
+        items = items + [x for x in [w0, g] if x is not None]
         set_shapes = set(np.shape(x) for x in items)
         if len(set_shapes) > 1:
             raise AttributeError("size mismatch among input arguments")
@@ -98,9 +99,9 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("ozone out of range")
         if np.any(h2o < 0):
             raise ValueError("water vapour out of range")
-        if np.any(a < 0):
+        if np.any(alpha < 0):
             raise ValueError("Angstrom alpha out of range")
-        if np.any(b < 0):
+        if np.any(beta < 0):
             raise ValueError("Angstrom beta out of range")
         if w0 is None:
             w0 = np.full(shape=set_shapes, fill_value=DEFAULT_W0, dtype=float)
@@ -112,7 +113,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("asymmetry parameter out of range")
 
         # Return the new instance.
-        atm = super(Atmosphere, cls).__new__(cls, p, o3, h2o, a, b, w0, g)
+        args = [cls, p, o3, h2o, alpha, beta, w0, g]
+        atm = super(Atmosphere, cls).__new__(*args)
         return atm
 
     @property
@@ -263,8 +265,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         # Broadcast arrays before the computation of 'tau'.
         wvln_um = np.atleast_1d(wvln_um)
-        alpha = np.atleast_1d(self.a)[:, None]
-        beta = np.atleast_1d(self.b)[:, None]
+        alpha = np.atleast_1d(self.alpha)[:, None]
+        beta = np.atleast_1d(self.beta)[:, None]
 
         # Compute the optical thickness using Angstrom's formula.
         tau = beta / wvln_um**alpha
