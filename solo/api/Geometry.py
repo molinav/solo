@@ -188,3 +188,28 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         else:
             return np.atleast_1d(geo_factor)[None, :, None]
 
+    def declination(self):
+        """Return the Sun declination for the current Geometry instance.
+
+        Return:
+
+            dec : array-like, shape (ngeo?,)
+                Sun declination for every scenario in radians
+        """
+
+        # Compute the day of the year in radians.
+        ett1 = self.day * DAY_TO_RAD
+        ett2 = 2. * ett1
+        ett3 = 3. * ett1
+
+        # Define the coefficients of the Fourier series.
+        c = [0.006918, -0.399912, 0.070257, -0.006758,
+             0.000907, -0.002697, 0.001480]
+
+        # Compute the declination in radians.
+        dec = c[0] + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)                \
+                   + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)                \
+                   + c[5] * np.cos(ett3) + c[6] * np.sin(ett3)
+
+        return dec
+
