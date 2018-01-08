@@ -71,33 +71,46 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 arguments are out of range
         """
 
+        # Declare constructor arguments.
+        args = [day, lat, lon, sza]
+
         # Ensure that the input arguments have consistent shapes and sizes.
-        set_shapes = set(np.shape(x) for x in [lat, lon, sza, day])
+        set_shapes = set(np.shape(x) for x in args if x is not None)
         if len(set_shapes) > 1:
             raise AttributeError("size mismatch among input arguments")
         set_shapes = list(set_shapes)[0]
         if len(set_shapes) > 1:
             raise AttributeError("input arguments must be 0- or 1-dimensional")
 
-        # Convert input angles from degrees to radians if needed.
-        if mode == "deg":
-            lat = np.radians(lat)
-            lon = np.radians(lon)
-            sza = np.radians(sza)
-        elif mode == "rad":
-            pass
+        # Check that mode receives a valid value ('rad' or 'deg').
+        if mode.lower() == "rad":
+            to_radians = lambda x: x
+        elif mode.lower() == "deg":
+            to_radians = np.radians
         else:
             raise ValueError("invalid value for 'mode': {}".format(mode))
 
-        # Ensure that the input angles and the Julian days are within range.
-        if np.any(np.abs(lat) > np.pi / 2):
-            raise ValueError("latitude values out of range")
-        if np.any(np.abs(lon) > np.pi):
-            raise ValueError("longitude values out of range")
-        if np.any(np.abs(sza - np.pi / 2) > np.pi / 2):
-            raise ValueError("solar zenith angle values out of range")
+        # Check that the Julian days are within valid range.
         if np.any(day < 1) or np.any(day > 366):
             raise ValueError("Julian days out of range")
+
+        # Check that the latitudes are within valid range.
+        if lat is not None:
+            lat = to_radians(lat)
+            if np.any(np.abs(lat) > np.pi / 2):
+                raise ValueError("latitude values out of range")
+
+        # Check that the longitudes are within valid range.
+        if lon is not None:
+            lon = to_radians(lon)
+            if np.any(np.abs(lon) > np.pi):
+                raise ValueError("longitude values out of range")
+
+        # Check that the solar zenith angles are within valid range.
+        if sza is not None:
+            sza = to_radians(sza)
+            if np.any(np.abs(sza - np.pi / 2) > np.pi / 2):
+                raise ValueError("solar zenith angle values out of range")
 
         # Compute the cosine of the solar zenith angle.
         mu0 = np.cos(sza)
