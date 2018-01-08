@@ -4,6 +4,7 @@ import numpy as np
 
 
 ATTRS = ["day", "lat", "lon", "sza", "mu0"]
+DAY_TO_RAD = 2. * np.pi / 365.
 
 
 class Geometry(namedtuple("Geometry", ATTRS)):
@@ -119,7 +120,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 day angle for every scenario's Julian day
         """
 
-        return 2 * np.pi * (self.day - 1) / 365
+        return (self.day - 1) * DAY_TO_RAD
 
     @property
     def ngeo(self):
