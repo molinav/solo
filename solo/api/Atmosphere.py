@@ -736,3 +736,36 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         trn = np.exp(-(oxygen_coef * oxygen_path / mu0)**oxygen_exp)
         return np.squeeze(trn) if squeeze else trn
 
+    @staticmethod
+    def from_file(path):
+        """Create Atmosphere instance from file.
+
+        Receive:
+
+            path : str
+                location of input file
+
+        Return:
+
+            atm : Atmosphere
+                instance of Atmosphere based on the input file
+
+        Raise:
+
+            ValueError
+                if the input file does not have a valid format
+        """
+
+        data = np.atleast_2d(np.loadtxt(path))
+
+        # Case if the file contains one input scenario in 4-row format.
+        if data.shape in [(3, 2), (4, 2)]:
+            args = data.ravel()
+        # Case if the file contains n input scenarios in 1-row format.
+        elif data.shape[1] in [6, 8]:
+            args = data.T
+        else:
+            raise ValueError("invalid file format")
+
+        return Atmosphere(*args)
+
