@@ -213,3 +213,33 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         return dec
 
+    def equation_of_time(self):
+        """Return the equation of time for the current Geometry instance.
+
+        The equation of time (ET) computes the difference between the
+        true solar time (TST), i.e. the time which tracks the diurnal
+        motion of the Sun, and the mean solar time (MST), i.e. the time
+        which tracks the motion of a theoretical Sun with noons always
+        24 hours apart, so that
+
+            TST(day) = MST(day) + ET(day)
+
+        Return:
+
+            eot : array-like, shape (ngeo?,)
+                equation of time values for every scenario in radians
+        """
+
+        # Compute the day of the year in radians.
+        ett1 = self.day * DAY_TO_RAD
+        ett2 = 2. * ett1
+
+        # Define the coefficients of the Fourier series.
+        c = [0.000075, 0.001868, -0.032077, -0.014615, -0.040849]
+
+        # Compute the equation of time in radians.
+        eot = c[0] + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)                \
+                   + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)
+
+        return eot
+
