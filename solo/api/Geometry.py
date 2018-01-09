@@ -3,7 +3,7 @@ from collections import namedtuple
 import numpy as np
 
 
-ATTRS = ["day", "lat", "lon", "sza", "mu0"]
+ATTRS = ["day", "utc", "lat", "lon", "sza", "mu0"]
 DAY_TO_RAD = 2. * np.pi / 365.
 
 
@@ -17,6 +17,10 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         day : array-like, shape (ngeo?,)
             Julian day ranged from 1 to 366
+
+        utc : array-like, (ngeo?,)
+            UTC time in datetime format (ranged from 00:00:00 to
+            23:59:59) or in seconds (ranged from 0 to 86399)
 
         day_angle : array-like, shape (ngeo?,)
             angle between the Earth-Sun line on 1st January and the same
@@ -38,24 +42,26 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             cosines of the solar zenith angle, ranged from -1 to +1
     """
 
-    def __new__(cls, lat, lon, sza, day, mode="deg"):
+    def __new__(cls, day, utc=None, lat=None, lon=None, sza=None, mode="deg"):
         """Return a new instance of Geometry.
 
         Receive:
 
-            lat : array-like, (ngeo?,)
-                latitude at the viewing positions
-            lon : array-like, (ngeo?,)
-                longitude at the viewing positions
-            sza : array-like, (ngeo?,)
-                solar zenith angles
             day : array-like, (ngeo?,)
                 Julian day
-            mode : str
+            utc : array-like, (ngeo?,), optional
+                UTC time in datetime format or in seconds (default None)
+            lat : array-like, (ngeo?,), optional
+                latitude at the viewing positions (default None)
+            lon : array-like, (ngeo?,), optional
+                longitude at the viewing positions (default None)
+            sza : array-like, (ngeo?,), optional
+                solar zenith angles (default None)
+            mode : str, optional
                 if 'deg', input angles are provided in degrees; if 'rad',
                 input angles are given in radians; otherwise, and error
-                is raised (default 'deg'); note that the instance always
-                stores the angles in radians
+                is raised (default 'deg'); note that the Geometry
+                instance always stores the angles in radians
 
         Return:
 
@@ -72,7 +78,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         """
 
         # Declare constructor arguments.
-        args = [day, lat, lon, sza]
+        args = [day, utc, lat, lon, sza]
 
         # Ensure that the input arguments have consistent shapes and sizes.
         set_shapes = set(np.shape(x) for x in args if x is not None)
@@ -116,7 +122,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         mu0 = np.cos(sza)
 
         # Return the new instance.
-        geo = super(Geometry, cls).__new__(cls, day, lat, lon, sza, mu0)
+        args = [cls, day, utc, lat, lon, sza, mu0]
+        geo = super(Geometry, cls).__new__(*args)
         return geo
 
     @property
