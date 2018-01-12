@@ -327,17 +327,47 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # Define the possible list of input arguments depending on its number.
         keys = {2: ["day", "sza"], 4: ["day", "utc", "lat", "lon"]}
 
+        # Define the converter from time strings to seconds.
+        def timestr2num(txt):
+            nums = list(map(int, txt.decode().split(":")))
+            # If there is only one number, it is assumed as seconds.
+            if len(nums) is 1:
+                return nums[0]
+            # If there are 2 or three numbers, they are assumed as
+            # [hours, minutes, (seconds)].
+            elif len(nums) in [2, 3]:
+                return sum(x * y for x, y in zip(nums, [3600, 60, 1]))
+            # Any other case is not valid.
+            else:
+                raise ValueError("invalid UTC time format")
+
         # Try to open the file assuming that all the values are numbers.
         # Otherwise, raise an error.
         try:
             data = np.atleast_2d(np.loadtxt(path))
+            args = data.ravel() if data.shape[0] is 1 else data.T
+        # If it does not work, try to parse the second column as a timestring.
         except ValueError:
-            raise ValueError("invalid file format")
+            try:
+                converters = {1: timestr2num}
+                data = np.atleast_2d(np.loadtxt(path, converters=converters))
+                args = data.ravel() if data.shape[0] is 1 else data.T
+            # If it does not work, it may be a single scenario in column form.
+            except IndexError:
+                data = np.loadtxt(path, dtype=np.bytes_)
+                if data.shape == (4,):
+                    data = np.atleast_2d(data)
+                    args = [int(data[0, 0]), timestr2num(data[0, 1]),
+                            float(data[0, 2]), float(data[0, 3])]
+                else:
+                    raise ValueError("invalid file format")
+            # If nothing works, then the file cannot be imported.
+            except ValueError:
+                raise ValueError("invalid file format")
 
         # Parse the columns into a possible combination of input arguments,
         # otherwise raise an error.
         try:
-            args = data.ravel() if data.shape[0] is 1 else data.T
             kwargs = {k: v for k, v in zip(keys[data.shape[1]], args)}
         except KeyError:
             raise ValueError("invalid file format")
