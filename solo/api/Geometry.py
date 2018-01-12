@@ -4,7 +4,11 @@ import numpy as np
 
 
 ATTRS = ["day", "utc", "lat", "lon", "sza", "mu0"]
+
+# Define conversion factors.
 DAY_TO_RAD = 2. * np.pi / 365.
+HOUR_TO_RAD = np.pi / 12.
+HOUR_TO_SEC = 3600.
 
 
 class Geometry(namedtuple("Geometry", ATTRS)):
@@ -117,6 +121,10 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             sza = to_radians(sza)
             if np.any(np.abs(sza - np.pi / 2) > np.pi / 2):
                 raise ValueError("solar zenith angle values out of range")
+        else:
+            args = [cls, day, utc, lat, lon, sza, None]
+            geo = super(Geometry, cls).__new__(*args)
+            sza = geo.compute_sza()
 
         # Compute the cosine of the solar zenith angle.
         mu0 = np.cos(sza)
@@ -249,4 +257,50 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                    + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)
 
         return eot
+
+    def compute_sza(self):
+        """Return the solar zenith angles for the given instance.
+
+        In case that there is already solar zenith angles, they are just
+        returned. If not, they are computed based on the datetime and the
+        geolocation (latitude, longitude).
+
+        Return:
+
+            sza : array-like, shape (ngeo?,)
+                solar zenith angles
+
+        Raise:
+
+            ValueError
+                if the latitude, longitude or datetime is missing
+        """
+
+        # Ensure that the solar zenith angle is not already computed, or that
+        # the geolocation attributes are not missing.
+        if self.sza is not None:
+            return self.sza
+        elif self.utc is None:
+            raise ValueError("UTC time values missing")
+        elif self.lat is None:
+            raise ValueError("latitude values missing")
+        elif self.lon is None:
+            raise ValueError("longitude values missing")
+
+        # Compute the mean solar time (MST) as a function of the UTC time and
+        # the time shift due to the geographic longitude.
+        mst = self.utc / HOUR_TO_SEC + self.lon / HOUR_TO_RAD
+
+        # Compute the true solar time (TST) as a function of the MST and the
+        # equation of time (EOT) converted from angle to time units.
+        tst = mst + self.equation_of_time() / HOUR_TO_RAD
+        hour_angle = (tst - 12.) * HOUR_TO_RAD
+
+        # Compute 'mu0' and the solar zenith angle.
+        dec = self.declination()
+        mu0 = + np.sin(self.lat) * np.sin(dec)                                \
+              + np.cos(self.lat) * np.cos(dec) * np.cos(hour_angle)
+        sza = np.arccos(mu0)
+
+        return sza
 
