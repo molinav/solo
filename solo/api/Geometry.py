@@ -3,7 +3,7 @@ from collections import namedtuple
 import numpy as np
 
 
-ATTRS = ["day", "utc", "lat", "lon", "sza", "mu0"]
+ATTRS = ["day", "sec", "lat", "lon", "sza", "mu0"]
 
 # Define conversion factors.
 DAY_TO_RAD = 2. * np.pi / 365.
@@ -22,9 +22,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         day : array-like, shape (ngeo?,)
             Julian day ranged from 1 to 366
 
-        utc : array-like, (ngeo?,)
-            UTC time in datetime format (ranged from 00:00:00 to
-            23:59:59) or in seconds (ranged from 0 to 86399)
+        sec : array-like, (ngeo?,)
+            UTC time in seconds (ranged from 0 to 86399)
 
         day_angle : array-like, shape (ngeo?,)
             angle between the Earth-Sun line on 1st January and the same
@@ -46,15 +45,15 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             cosines of the solar zenith angle, ranged from -1 to +1
     """
 
-    def __new__(cls, day, utc=None, lat=None, lon=None, sza=None, mode="deg"):
+    def __new__(cls, day, sec=None, lat=None, lon=None, sza=None, mode="deg"):
         """Return a new instance of Geometry.
 
         Receive:
 
             day : array-like, (ngeo?,)
                 Julian day
-            utc : array-like, (ngeo?,), optional
-                UTC time in datetime format or in seconds (default None)
+            sec : array-like, (ngeo?,), optional
+                UTC time in seconds (default None)
             lat : array-like, (ngeo?,), optional
                 latitude at the viewing positions (default None)
             lon : array-like, (ngeo?,), optional
@@ -82,7 +81,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         """
 
         # Declare constructor arguments.
-        args = [day, utc, lat, lon, sza]
+        args = [day, sec, lat, lon, sza]
 
         # Ensure that the input arguments have consistent shapes and sizes.
         set_shapes = set(np.shape(x) for x in args if x is not None)
@@ -122,7 +121,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             if np.any(np.abs(sza - np.pi / 2) > np.pi / 2):
                 raise ValueError("solar zenith angle values out of range")
         else:
-            args = [cls, day, utc, lat, lon, sza, None]
+            args = [cls, day, sec, lat, lon, sza, None]
             geo = super(Geometry, cls).__new__(*args)
             sza = geo.compute_sza()
 
@@ -130,7 +129,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         mu0 = np.cos(sza)
 
         # Return the new instance.
-        args = [cls, day, utc, lat, lon, sza, mu0]
+        args = [cls, day, sec, lat, lon, sza, mu0]
         geo = super(Geometry, cls).__new__(*args)
         return geo
 
@@ -280,8 +279,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # the geolocation attributes are not missing.
         if self.sza is not None:
             return self.sza
-        elif self.utc is None:
-            raise ValueError("UTC time values missing")
+        elif self.sec is None:
+            raise ValueError("UTC seconds missing")
         elif self.lat is None:
             raise ValueError("latitude values missing")
         elif self.lon is None:
@@ -289,7 +288,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         # Compute the mean solar time (MST) as a function of the UTC time and
         # the time shift due to the geographic longitude.
-        mst = self.utc / HOUR_TO_SEC + self.lon / HOUR_TO_RAD
+        mst = self.sec / HOUR_TO_SEC + self.lon / HOUR_TO_RAD
 
         # Compute the true solar time (TST) as a function of the MST and the
         # equation of time (EOT) converted from angle to time units.
@@ -325,7 +324,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         """
 
         # Define the possible list of input arguments depending on its number.
-        keys = {2: ["day", "sza"], 4: ["day", "utc", "lat", "lon"]}
+        keys = {2: ["day", "sza"], 4: ["day", "sec", "lat", "lon"]}
 
         # Define the converter from time strings to seconds.
         def timestr2num(txt):
