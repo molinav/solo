@@ -304,3 +304,43 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         return sza
 
+    @staticmethod
+    def from_file(path):
+        """Create Geometry instance from file.
+
+        Receive:
+
+            path : str
+                location of input file
+
+        Return:
+
+            geo : Geometry
+                instance of Geometry based on the input file
+
+        Raise:
+
+            ValueError
+                if the input file does not have a valid format
+        """
+
+        # Define the possible list of input arguments depending on its number.
+        keys = {2: ["day", "sza"], 4: ["day", "utc", "lat", "lon"]}
+
+        # Try to open the file assuming that all the values are numbers.
+        # Otherwise, raise an error.
+        try:
+            data = np.atleast_2d(np.loadtxt(path))
+        except ValueError:
+            raise ValueError("invalid file format")
+
+        # Parse the columns into a possible combination of input arguments,
+        # otherwise raise an error.
+        try:
+            args = data.ravel() if data.shape[0] is 1 else data.T
+            kwargs = {k: v for k, v in zip(keys[data.shape[1]], args)}
+        except KeyError:
+            raise ValueError("invalid file format")
+
+        return Geometry(**kwargs)
+
