@@ -102,6 +102,13 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # Check that the Julian days are within valid range.
         if np.any(day < 1) or np.any(day > 366):
             raise ValueError("Julian days out of range")
+        day = int(day) if np.shape(day) == () else np.array(day, dtype=int)
+
+        # Check that the UTC seconds are within valid range.
+        if sec is not None:
+            if np.any(sec < 0) or np.any(sec > 86399):
+                raise ValueError("UTC seconds out of range")
+            sec = int(sec) if np.shape(sec) == () else np.array(sec, dtype=int)
 
         # Check that the latitudes are within valid range.
         if lat is not None:
