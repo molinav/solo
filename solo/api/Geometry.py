@@ -335,7 +335,11 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         # Define the converter from time strings to seconds.
         def timestr2num(txt):
-            nums = list(map(int, txt.decode().split(":")))
+            # Try to split the hours, minutes and seconds from time string.
+            try:
+                nums = list(map(int, txt.decode().split(":")))
+            except ValueError:
+                raise ValueError("invalid UTC time format")
             # If there is only one number, it is assumed as seconds.
             if len(nums) is 1:
                 return nums[0]
