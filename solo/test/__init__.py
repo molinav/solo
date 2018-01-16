@@ -41,12 +41,12 @@ class SoloTest(unittest.TestCase):
             sza=np.asarray([np.degrees(self.geo0.sza[0]), 15.50, 30.50]),
             day=np.asarray([self.geo0.day, 12, 250]))
         self.atm1 = Atmosphere(
-            p=np.asarray([self.atm0.p, 875.4, 925.3]),
-            rho=np.asarray([self.atm0.rho, 0.35, 0.7]),
-            o3=np.asarray([self.atm0.o3, 286., 310]),
-            h2o=np.asarray([self.atm0.h2o, 0.15, 0.01]),
-            alpha=np.asarray([self.atm0.alpha, 0.75, 0.9]),
-            beta=np.asarray([self.atm0.beta, 0.10, 0.15]))
+            p=np.asarray([self.atm0.p[0], 875.4, 925.3]),
+            rho=np.asarray([self.atm0.rho[0], 0.35, 0.7]),
+            o3=np.asarray([self.atm0.o3[0], 286., 310]),
+            h2o=np.asarray([self.atm0.h2o[0], 0.15, 0.01]),
+            alpha=np.asarray([self.atm0.alpha[0], 0.75, 0.9]),
+            beta=np.asarray([self.atm0.beta[0], 0.10, 0.15]))
 
         # Store the results corresponding to the created instances.
         self.result = {
