@@ -3,7 +3,7 @@ import os.path
 import numpy as np
 
 
-def radtran(geo, atm, wvln=None, squeeze=True, coupling=False):
+def radtran(geo, atm, wvln=None, squeeze=True, coupling=True):
     """Return the BOA irradiances based on an atmosphere and geometry.
 
     Receive:
