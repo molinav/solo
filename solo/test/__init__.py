@@ -12,8 +12,8 @@ UNITTEST_FOLDER = os.path.dirname(__file__)
 
 class SoloTest(unittest.TestCase):
 
-    def one(self, squeeze):
-        return () if squeeze else (1,)
+    def one(self):
+        return (1,)
 
     def setUp(self):
         """Set up the attributes needed for the test."""
@@ -36,10 +36,10 @@ class SoloTest(unittest.TestCase):
 
         # Create vectorised instances of Geometry and Atmosphere.
         self.geo1 = Geometry(
-            lat=np.asarray([np.degrees(self.geo0.lat), 35.45]),
-            lon=np.asarray([np.degrees(self.geo0.lon), 25.80]),
-            sza=np.asarray([np.degrees(self.geo0.sza), 15.5]),
-            day=np.asarray([self.geo0.day, 12]))
+            lat=np.asarray([np.degrees(self.geo0.lat), 35.45, 40.13]),
+            lon=np.asarray([np.degrees(self.geo0.lon), 25.80, -9.51]),
+            sza=np.asarray([np.degrees(self.geo0.sza), 15.50, 30.50]),
+            day=np.asarray([self.geo0.day, 12, 250]))
         self.atm1 = Atmosphere(
             p=np.asarray([self.atm0.p, 875.4, 925.3]),
             rho=np.asarray([self.atm0.rho, 0.35, 0.7]),

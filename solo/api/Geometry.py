@@ -163,7 +163,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         shp = np.shape(self.mu0)
         return shp[0] if shp else 1
 
-    def geometric_factor(self, squeeze=True):
+    def geometric_factor(self):
         """Return the factor used to correct the solar TOA irradiance.
 
         The solar TOA irradiance E0 is normally provided for a constant
@@ -179,21 +179,11 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         geometric factor (r0 / r(day))**2 when E0 and r0 are defined for
         a Sun-Earth distance of 1 AU.
 
-        Receive:
-
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
-
         Return:
 
             geo_factor : array-like, shape (ngeo?,)
                 geometric factor for every scenario
         """
-
-        # Ensure that 'squeeze' is a bool flag.
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
 
         # Define the coefficients of the Fourier series.
         c = [1.00011, 0.03422, 0.00128, 0.000719, 0.000077]
@@ -204,10 +194,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         geo_factor = c[0] + c[1] * np.cos(day_ang1) + c[2] * np.sin(day_ang1) \
                           + c[3] * np.cos(day_ang2) + c[4] * np.sin(day_ang2)
 
-        if bool(squeeze):
-            return np.squeeze(geo_factor)
-        else:
-            return np.atleast_1d(geo_factor)[None, :, None]
+        return geo_factor
 
     def declination(self):
         """Return the Sun declination for the current Geometry instance.

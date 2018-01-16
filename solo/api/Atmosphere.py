@@ -154,7 +154,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         return ABSCOEF
 
-    def tau_rayleigh(self, wvln_um, squeeze=True, return_albedo=False):
+    def tau_rayleigh(self, wvln_um, return_albedo=False):
         """Return the Rayleigh optical depth for the given wavelengths.
 
         The optical depth is computed by using Bates's formula:
@@ -171,9 +171,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             wvln_um : array-like, shape (nwvln?,)
                 wavelengths in microns
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
             return_albedo : bool, optional
                 if True, return also the Rayleigh contribution to the
                 atmospheric albedo (default False)
@@ -190,14 +187,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             ValueError
                 if the input 'wvln_um' does not have a proper shape
             TypeError
-                if 'squeeze' or 'return_albedo' are not boolean flags
+                if 'return_albedo' is not a boolean flag
         """
 
         # Ensure the shape and type of the input arguments.
         if len(np.shape(wvln_um)) > 1:
             raise ValueError("'wvln_um' must be 0- or 1-dimensional")
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
         if not isinstance(return_albedo, bool):
             raise TypeError("'return_albedo' must be a bool")
 
@@ -223,13 +218,10 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         else:
             salb = ()
 
-        # If requested, squeeze the length-1 axes from the output arrays.
         out = (tau,) + salb
-        if bool(squeeze):
-            out = tuple(np.squeeze(x) for x in out)
         return out if len(out) > 1 else out[0]
 
-    def tau_aerosols(self, wvln_um, squeeze=True, return_albedo=False):
+    def tau_aerosols(self, wvln_um, return_albedo=False):
         """Return the aerosol optical depth for the given wavelengths.
 
         The optical depth is computed by using the Angstrom's formula:
@@ -240,9 +232,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             wvln_um : array-like, shape (nwvln?,)
                 wavelengths in microns
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
             return_albedo : bool, optional
                 if True, return also the aerosol contribution to the
                 atmospheric albedo (default False)
@@ -259,14 +248,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             ValueError
                 if the input 'wvln_um' does not have a proper shape
             TypeError
-                if 'squeeze' or 'return_albedo' are not boolean flags
+                if 'return_albedo' is not a boolean flag
         """
 
         # Ensure the shape and type of the input arguments.
         if len(np.shape(wvln_um)) > 1:
             raise ValueError("'wvln_um' must be 0- or 1-dimensional")
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
         if not isinstance(return_albedo, bool):
             raise TypeError("'return_albedo' must be a bool")
 
@@ -286,13 +273,10 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         else:
             salb = ()
 
-        # If requested, squeeze the length-1 axes from the output arrays.
         out = (tau,) + salb
-        if bool(squeeze):
-            out = tuple(np.squeeze(x) for x in out)
         return out if len(out) > 1 else out[0]
 
-    def trn_rayleigh(self, wvln_um, mu0, squeeze=True, return_albedo=False):
+    def trn_rayleigh(self, wvln_um, mu0, return_albedo=False):
         """Return the Rayleigh transmittances.
 
         The direct transmittance is just computed as:
@@ -315,9 +299,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in microns
             mu0 : array-like, shape (ngeo?,)
                 cosine of solar zenith angles
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
             return_albedo : bool, optional
                 if True, return also the Rayleigh contribution to the
                 atmospheric albedo (default False)
@@ -341,25 +322,21 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             ValueError
                 if the input 'wvln_um' or 'mu0' have invalid shape
             TypeError
-                if 'squeeze' or 'return_albedo' are not boolean flags
+                if 'return_albedo' is not a boolean flag
         """
 
-        # Ensure the shape of 'mu0' and the type of 'squeeze'. The other
-        # arguments are checked when calling the method 'tau_rayleigh'.
+        # Ensure the shape of 'mu0'. The other arguments are checked when
+        # calling the method 'tau_rayleigh'.
         if len(np.shape(mu0)) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
         mu0 = np.atleast_1d(mu0)[:, None]
 
         # Compute the optical thickness and the atmospheric albedo.
-        args = [wvln_um, False, return_albedo]
+        args = [wvln_um, return_albedo]
         out = self.tau_rayleigh(*args)
         tau, salb = (out[0], (out[1],)) if return_albedo else (out, ())
 
-        # Add the geometrical axis to 'tau' and compute the Rayleigh direct
-        # transmittance.
-        tau = tau[:, None, :]
+        # Compute the Rayleigh direct transmittance.
         tdir = np.exp(-tau / mu0)
 
         # Compute the global and diffuse transmittances.
@@ -367,14 +344,10 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         tglb = ((c[0] + mu0) + (c[0] - mu0) * tdir) / (c[1] + tau)
         tdif = tglb - tdir
 
-        # If requested, squeeze the length-1 axes from the output arrays.
         out = (tglb, tdir, tdif) + salb
-        if bool(squeeze):
-            out = tuple(np.squeeze(x) for x in out)
         return out
 
-    def trn_aerosols(self, wvln_um, mu0, squeeze=True, return_albedo=False,
-                     coupling=False):
+    def trn_aerosols(self, wvln_um, mu0, return_albedo=False, coupling=False):
         """Return the aerosol transmittances.
 
         The direct transmittance is just computed as:
@@ -403,9 +376,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in microns
             mu0 : array-like, shape (ngeo?,)
                 cosine of solar zenith angles
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
             return_albedo : bool, optional
                 if True, return also the aerosol contribution to the
                 atmospheric albedo (default False)
@@ -433,23 +403,19 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             ValueError
                 if the input 'wvln_um' or 'mu0' have invalid shape
             TypeError
-                if 'squeeze', 'return_albedo' or 'coupling' are not
-                boolean flags
+                if 'return_albedo' or 'coupling' are not boolean flags
         """
 
-        # Ensure the shape of 'mu0' and the type of 'squeeze' and 'coupling'.
-        # The other arguments are already checked when calling the method
-        # 'tau_aerosols'.
+        # Ensure the shape of 'mu0' and the type of 'coupling'. The other
+        # arguments are already checked when calling the method 'tau_aerosols'.
         if len(np.shape(mu0)) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
         if not isinstance(coupling, bool):
             raise TypeError("'coupling' must be a bool")
         mu0 = np.atleast_1d(mu0)[:, None]
 
         # Compute the optical thickness and the atmospheric albedo.
-        args = [wvln_um, False, return_albedo]
+        args = [wvln_um, return_albedo]
         out = self.tau_aerosols(*args)
         tau, salb = (out[0], out[1]) if return_albedo else (out, ())
         g, w0 = [np.atleast_1d(x)[:, None] for x in (self.g, self.w0)]
@@ -465,10 +431,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             # albedo due to Rayleigh-aerosol coupling.
             g = (tau_aer * g) / tau
             w0 = (tau_ray + w0 * tau_aer) / tau
-
-        # Reshape tau, g and w0 to the 3-dim space (nscen, ngeo, nwvln).
         salb = (salb,)
-        tau, g, w0 = [x[:, None, :] for x in (tau, g, w0)]
 
         # Compute intermediate parameters.
         ak = np.sqrt((1. - w0) * (1. - w0 * g))
@@ -480,14 +443,10 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         tglb = (1. - r0**2) * tdir_k / (1. - (r0 * tdir_k)**2)
         tdif = tglb - tdir
 
-        # If requested, squeeze the length-1 axes from the output arrays.
         out = (tglb, tdir, tdif) + salb
-        if bool(squeeze):
-            out = tuple(np.squeeze(x) for x in out)
         return out
 
-    def trn_mixture(self, wvln_um, mu0, squeeze=True, return_albedo=False,
-                    coupling=False):
+    def trn_mixture(self, wvln_um, mu0, return_albedo=False, coupling=False):
         """Return the transmittances for the Rayleigh-aerosols mixture.
 
         The methos allows to consider these transmittance just as a
@@ -500,9 +459,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in microns
             mu0 : array-like, shape (ngeo?,)
                 cosine of solar zenith angles
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
             return_albedo : bool, optional
                 if True, return also the atmospheric albedo
                 (default False)
@@ -529,26 +485,22 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             ValueError
                 if the input 'wvln_um' or 'mu0' have invalid shape
             TypeError
-                if 'squeeze', 'return_albedo' or 'coupling' are not
-                boolean flags
+                if 'return_albedo' or 'coupling' are not boolean flags
         """
 
-        # Ensure the type of 'squeeze' and 'coupling'. The other arguments
-        # are already checked when calling the methods 'trn_rayleigh' and
-        # 'trn_aerosols'.
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
+        # Ensure the type of 'coupling'. The other arguments are already
+        # checked when calling the methods 'trn_rayleigh' and 'trn_aerosols'.
         if not isinstance(coupling, bool):
             raise TypeError("'coupling' must be a bool")
 
         if coupling:
             # Call aerosol transmittance method with coupling set to True.
-            args = [wvln_um, mu0, squeeze, return_albedo, True]
+            args = [wvln_um, mu0, return_albedo, True]
             out = self.trn_aerosols(*args)
             tglb, tdir, tdif = out[:3]
             salb = (out[3],) if return_albedo else ()
         else:
-            args = [wvln_um, mu0, False, return_albedo]
+            args = [wvln_um, mu0, return_albedo]
             # Compute Rayleigh transmittances.
             out = self.trn_rayleigh(*args)
             tglb_ray, tdir_ray, tdif_ray = out[:3]
@@ -563,13 +515,10 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             tdif = tglb - tdir
             salb = (sray + saer,) if return_albedo else ()
 
-        # If requested, squeeze the length-1 axes from the output arrays.
         out = (tglb, tdir, tdif) + salb
-        if bool(squeeze):
-            out = tuple(np.squeeze(x) for x in out)
         return out
 
-    def trn_water(self, wvln, mu0, squeeze=True):
+    def trn_water(self, wvln, mu0):
         """Return the transmittance due to water vapour absorption.
 
         The transmittance is computed by using the formula:
@@ -588,9 +537,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in nanometers
             mu0 : array-like, shape (ngeo?,)
                 cosines of the solar zenith angle
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
 
         Return:
 
@@ -602,8 +548,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             ValueError
                 if 'wvln' or 'mu0' have invalid shapes
-            TypeError
-                if 'squeeze' is not a boolean flag
         """
 
         # Ensure the shape and type of the input arguments.
@@ -611,21 +555,19 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("'wvln' must be 0- or 1-dimensional")
         if len(np.shape(mu0)) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
 
         # Compute the absorption coefficients and exponents for water vapour
         # at the given input wavelengths by using linear interpolation.
         water_coef = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 1]]))
         water_exp = np.atleast_1d(np.interp(wvln, *self.abscoef[[0, 2]]))
-        water_path = np.atleast_1d(self.h2o)[:, None, None]
+        water_path = np.atleast_1d(self.h2o)[:, None]
         mu0 = np.atleast_1d(mu0)[:, None]
 
         trn = np.where(np.isclose(water_exp, 0.0), 1.0,
                        np.exp(-(water_coef * water_path / mu0)**water_exp))
-        return np.squeeze(trn) if squeeze else trn
+        return trn
 
-    def trn_ozone(self, wvln, mu0, squeeze=True):
+    def trn_ozone(self, wvln, mu0):
         """Return the transmittance due to ozone absorption.
 
         The transmittance is computed by using the formula:
@@ -642,9 +584,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in nanometers
             mu0 : array-like, shape (ngeo?,)
                 cosines of the solar zenith angle
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
 
         Return:
 
@@ -656,8 +595,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             ValueError
                 if the input 'wvln' does not have a proper shape
-            TypeError
-                if 'squeeze' is not a boolean flag
         """
 
         # Ensure shape of the input arguments.
@@ -665,8 +602,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("'wvln' must be 0- or 1-dimensional")
         if len(np.shape(mu0)) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
 
         # Compute the absorption cross sections for ozone at the given input
         # wavelengths by using linear interpolation, and convert them to
@@ -676,12 +611,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         mu0 = np.atleast_1d(mu0)[:, None]
 
         # Convert from ozone amount in DU to ozone absorption path in cm.
-        ozone_path = np.atleast_1d(1E-3 * self.o3)[:, None, None]
+        ozone_path = np.atleast_1d(1E-3 * self.o3)[:, None]
 
         trn = np.exp(-ozone_coef * ozone_path / mu0)
-        return np.squeeze(trn) if squeeze else trn
+        return trn
 
-    def trn_oxygen(self, wvln, mu0, squeeze=True):
+    def trn_oxygen(self, wvln, mu0):
         """Return the transmittance due to molecular oxygen absorption.
 
         The transmittance is computed by using the formula:
@@ -699,9 +634,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
                 wavelengths in nanometers
             mu0 : array-like, shape (ngeo?,)
                 cosines of the solar zenith angle
-            squeeze : bool, optional
-                if True, remove length-1 axes from the output arrays
-                (default True)
 
         Return:
 
@@ -712,8 +644,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
             ValueError
                 if 'wvln' or 'mu0' have invalid shapes
-            TypeError
-                if 'squeeze' is not a boolean flag
         """
 
         # Ensure shape of the input arguments.
@@ -721,8 +651,6 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise ValueError("'wvln' must be 0- or 1-dimensional")
         if len(np.shape(mu0)) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
-        if not isinstance(squeeze, bool):
-            raise TypeError("'squeeze' must be a bool")
 
         # Compute the absorption coefficients for oxygen at the given input
         # wavelengths by using linear interpolation.
@@ -730,11 +658,11 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         mu0 = np.atleast_1d(mu0)[:, None]
 
         # Declare the oxygen path and the oxygen exponent as constants.
-        oxygen_path = np.atleast_1d(0.209 * 173200)[:, None, None]
+        oxygen_path = np.atleast_1d(0.209 * 173200)[:, None]
         oxygen_exp = 0.5641
 
         trn = np.exp(-(oxygen_coef * oxygen_path / mu0)**oxygen_exp)
-        return np.squeeze(trn) if squeeze else trn
+        return trn
 
     @staticmethod
     def from_file(path):
