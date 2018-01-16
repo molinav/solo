@@ -19,30 +19,30 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         ngeo : int
             number of scenarios
 
-        day : array-like, shape (ngeo?,)
+        day : array-like, shape (ngeo,)
             Julian day ranged from 1 to 366
 
-        sec : array-like, (ngeo?,)
+        sec : array-like, (ngeo,)
             UTC time in seconds (ranged from 0 to 86399)
 
-        day_angle : array-like, shape (ngeo?,)
+        day_angle : array-like, shape (ngeo,)
             angle between the Earth-Sun line on 1st January and the same
             line for the Julian days corresponding to the scenarios,
             ranged from 0 to 2 * np.pi rad
 
-        lat : array-like, shape (ngeo?,)
+        lat : array-like, shape (ngeo,)
             latitude at the viewing positions in radians, ranged from
             -np.pi / 2 to +np.pi / 2 rad
 
-        lon : array-like, shape (ngeo?,)
+        lon : array-like, shape (ngeo,)
             longitude at the viewing positions in radians, ranged from
             -np.pi to +np.pi rad
 
-        sza : array-like, shape (ngeo?,)
+        sza : array-like, shape (ngeo,)
             solar zenith angles in radians, ranged from 0 to +np.pi rad
 
-        mu0 : array-like, shape (ngeo?,)
-            cosines of the solar zenith angle, ranged from -1 to +1
+        mu0 : array-like, shape (ngeo,)
+            cosine of the solar zenith angles, ranged from -1 to +1
     """
 
     def __new__(cls, day, sec=None, lat=None, lon=None, sza=None, mode="deg"):
@@ -50,15 +50,15 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Receive:
 
-            day : array-like, (ngeo?,)
+            day : array-like, (ngeo,)
                 Julian day
-            sec : array-like, (ngeo?,), optional
+            sec : array-like, (ngeo,), optional
                 UTC time in seconds (default None)
-            lat : array-like, (ngeo?,), optional
+            lat : array-like, (ngeo,), optional
                 latitude at the viewing positions (default None)
-            lon : array-like, (ngeo?,), optional
+            lon : array-like, (ngeo,), optional
                 longitude at the viewing positions (default None)
-            sza : array-like, (ngeo?,), optional
+            sza : array-like, (ngeo,), optional
                 solar zenith angles (default None)
             mode : str, optional
                 if 'deg', input angles are provided in degrees; if 'rad',
@@ -102,29 +102,29 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # Check that the Julian days are within valid range.
         if np.any(day < 1) or np.any(day > 366):
             raise ValueError("Julian days out of range")
-        day = int(day) if np.shape(day) == () else np.array(day, dtype=int)
+        day = np.atleast_1d(day).astype(int)
 
         # Check that the UTC seconds are within valid range.
         if sec is not None:
             if np.any(sec < 0) or np.any(sec > 86399):
                 raise ValueError("UTC seconds out of range")
-            sec = int(sec) if np.shape(sec) == () else np.array(sec, dtype=int)
+            sec = np.atleast_1d(sec).astype(int)
 
         # Check that the latitudes are within valid range.
         if lat is not None:
-            lat = to_radians(lat)
+            lat = np.atleast_1d(to_radians(lat))
             if np.any(np.abs(lat) > np.pi / 2):
                 raise ValueError("latitude values out of range")
 
         # Check that the longitudes are within valid range.
         if lon is not None:
-            lon = to_radians(lon)
+            lon = np.atleast_1d(to_radians(lon))
             if np.any(np.abs(lon) > np.pi):
                 raise ValueError("longitude values out of range")
 
         # Check that the solar zenith angles are within valid range.
         if sza is not None:
-            sza = to_radians(sza)
+            sza = np.atleast_1d(to_radians(sza))
             if np.any(np.abs(sza - np.pi / 2) > np.pi / 2):
                 raise ValueError("solar zenith angle values out of range")
         else:
@@ -150,7 +150,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Return:
 
-            day_angle : array-like, shape (ngeo?,)
+            day_angle : array-like, shape (ngeo,)
                 day angle for every scenario's Julian day
         """
 
@@ -181,7 +181,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Return:
 
-            geo_factor : array-like, shape (ngeo?,)
+            geo_factor : array-like, shape (ngeo,)
                 geometric factor for every scenario
         """
 
@@ -201,7 +201,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Return:
 
-            dec : array-like, shape (ngeo?,)
+            dec : array-like, shape (ngeo,)
                 Sun declination for every scenario in radians
         """
 
@@ -234,7 +234,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Return:
 
-            eot : array-like, shape (ngeo?,)
+            eot : array-like, shape (ngeo,)
                 equation of time values for every scenario in radians
         """
 
@@ -260,7 +260,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         Return:
 
-            sza : array-like, shape (ngeo?,)
+            sza : array-like, shape (ngeo,)
                 solar zenith angles
 
         Raise:
