@@ -1,3 +1,4 @@
+from __future__ import print_function
 from __future__ import division
 import os.path
 import numpy as np
@@ -81,4 +82,73 @@ def radtran(geo, atm, wvln=None, coupling=True):
     # If requested, squeeze the length-1 axes from the output arrays.
     out = (irr_glb, irr_dir, irr_dif)
     return out
+
+
+if __name__ == "__main__":
+
+    import sys
+    import getopt
+    from api import Geometry
+    from api import Atmosphere
+
+    # Read arguments and options.
+    optkeys = ["geo=", "atm=", "out=", "no-coupling"]
+    optlist, args = getopt.getopt(sys.argv[1:], "", optkeys)
+
+    # Parse --geo option.
+    geo = [x[1] for x in optlist if x[0] == "--geo"]
+    if len(geo) is 0:
+        print("Error: missing --geo option")
+        sys.exit(1)
+    elif len(geo) is not 1:
+        print("Error: multiple --geo options")
+        sys.exit(1)
+    else:
+        try:
+            geo = Geometry.from_file(geo[0])
+        except Exception as err:
+            print("{}\nError: wrong Geometry input file".format(err))
+            sys.exit(1)
+
+    # Parse --atm option.
+    atm = [x[1] for x in optlist if x[0] == "--atm"]
+    if len(atm) is 0:
+        print("Error: missing --atm option")
+        sys.exit(2)
+    elif len(atm) is not 1:
+        print("Error: multiple --atm options")
+        sys.exit(2)
+    else:
+        try:
+            atm = Atmosphere.from_file(atm[0])
+        except Exception as err:
+            print("{}\nError: wrong Atmosphere input file".format(err))
+            sys.exit(2)
+
+    # Parse --out option.
+    out = [x[1] for x in optlist if x[0] == "--out"]
+    if len(out) is 0:
+        print("Error: missing --out option")
+        sys.exit(3)
+    elif len(out) is not 1:
+        print("Error: multiple --out options")
+        sys.exit(3)
+    else:
+        out = str(out[0])
+        out_cut = os.path.splitext(out)
+        out_glb = "".join([out_cut[0], "_glb", out_cut[1]])
+        out_dir = "".join([out_cut[0], "_dir", out_cut[1]])
+        out_dif = "".join([out_cut[0], "_dif", out_cut[1]])
+
+    # Parse --no-coupling option.
+    coupling = [x[1] for x in optlist if x[0] == "--no-coupling"]
+    coupling = not bool(coupling)
+
+    # Run the radiative transfer solver.
+    irr_glb, irr_dir, irr_dif = radtran(geo, atm, None, coupling)
+
+    # Export the results into text files.
+    np.savetxt(out_glb, irr_glb.T, fmt="%+14.6E")
+    np.savetxt(out_dir, irr_dir.T, fmt="%+14.6E")
+    np.savetxt(out_dif, irr_dif.T, fmt="%+14.6E")
 
