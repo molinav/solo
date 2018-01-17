@@ -117,12 +117,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         if np.any(beta < 0):
             raise ValueError("Angstrom beta out of range")
         if w0 is None:
-            w0 = np.full(shape=set_shapes, fill_value=DEFAULT_W0, dtype=float)
+            w0 = DEFAULT_W0 * np.ones(shape=set_shapes, dtype=float)
         elif np.any(w0 < 0) or np.any(w0 > 1):
             raise ValueError("single scattering albedo out of range")
         w0 = np.atleast_1d(w0)
         if g is None:
-            g = np.full(shape=set_shapes, fill_value=DEFAULT_G, dtype=float)
+            g = DEFAULT_G * np.ones(shape=set_shapes, dtype=float)
         elif np.any(np.abs(g) > 1):
             raise ValueError("asymmetry parameter out of range")
         g = np.atleast_1d(g)
