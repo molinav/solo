@@ -37,7 +37,7 @@ class UnittestCommand(Command):
 
 kwargs = {
     "name":
-        "Solo",
+        "solo",
     "version":
         "1.0.0",
     "license":
