@@ -549,7 +549,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         where 'kabs_o2' denotes the water vapour absorption coefficients
         in cm-1, 'path_h2o' is the water vapour absorption path given in
-        cm, 'mu0' is the cosine of the solar zenith angle and a is an
+        cm, 'mu0' is the cosine of the solar zenith angle and 'a' is an
         empirical exponent (which depends on the wavelength for the
         water vapour).
 
@@ -660,7 +660,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         where 'kabs_o2' denotes the oxygen absorption coefficients
         in cm-1, 'path_o2' is the oxygen absorption path given in cm,
-        'mu0' is the cosine of the solar zenith angle and a is an
+        'mu0' is the cosine of the solar zenith angle and 'a' is an
         empirical exponent (equal to 0.5641 for the molecular oxygen).
 
         Receive:
