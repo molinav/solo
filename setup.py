@@ -37,17 +37,17 @@ class UnittestCommand(Command):
 
 kwargs = {
     "name":
-        "Solo",
+        "solo",
     "version":
-        "0.3",
+        "1.0.0",
     "license":
-        "GPL-3.0",
+        "GNU General Public License v2 or later (GPLv2+)",
     "description":
         "Python implementation of UVa-GOA radiative transfer model",
     "author":
-        "Victoria E. Cachorro Revilla",
+        "Victor Molina Garcia",
     "author_email":
-        "chiqui@goa.uva.es",
+        "victor@goa.uva.es",
     "maintainer":
         "Victor Molina Garcia",
     "maintainer_email":
