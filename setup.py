@@ -45,9 +45,9 @@ kwargs = {
     "description":
         "Python implementation of UVa-GOA radiative transfer model",
     "author":
-        "Victoria E. Cachorro Revilla",
+        "Victor Molina Garcia",
     "author_email":
-        "chiqui@goa.uva.es",
+        "victor@goa.uva.es",
     "maintainer":
         "Victor Molina Garcia",
     "maintainer_email":
