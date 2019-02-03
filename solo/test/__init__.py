@@ -1,5 +1,3 @@
-from __future__ import division
-from __future__ import print_function
 import os.path
 import unittest
 import numpy as np
@@ -26,7 +24,7 @@ class SoloTest(unittest.TestCase):
 
         # Extract the set of wavelengths in nanometers and microns.
         self.wvln = data[0]
-        self.wvln_um = self.wvln / 1000.
+        self.wvln_um = 0.001 * self.wvln
 
         # Create the instances of Geometry and Atmosphere.
         self.geo0 = Geometry(
@@ -81,6 +79,5 @@ if __name__ == "__main__":
     pattern = os.path.join(UNITTEST_FOLDER, "*.py")
     for path in glob.glob(pattern):
         if "__init__" not in path:
-            print(os.path.basename(path))
             subprocess.call([python_exec, path])
 

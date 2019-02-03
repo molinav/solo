@@ -117,12 +117,12 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         if np.any(beta < 0):
             raise ValueError("Angstrom beta out of range")
         if w0 is None:
-            w0 = np.full(shape=set_shapes, fill_value=DEFAULT_W0, dtype=float)
+            w0 = DEFAULT_W0 * np.ones(shape=set_shapes, dtype=float)
         elif np.any(w0 < 0) or np.any(w0 > 1):
             raise ValueError("single scattering albedo out of range")
         w0 = np.atleast_1d(w0)
         if g is None:
-            g = np.full(shape=set_shapes, fill_value=DEFAULT_G, dtype=float)
+            g = DEFAULT_G * np.ones(shape=set_shapes, dtype=float)
         elif np.any(np.abs(g) > 1):
             raise ValueError("asymmetry parameter out of range")
         g = np.atleast_1d(g)
@@ -549,7 +549,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         where 'kabs_o2' denotes the water vapour absorption coefficients
         in cm-1, 'path_h2o' is the water vapour absorption path given in
-        cm, 'mu0' is the cosine of the solar zenith angle and a is an
+        cm, 'mu0' is the cosine of the solar zenith angle and 'a' is an
         empirical exponent (which depends on the wavelength for the
         water vapour).
 
@@ -660,7 +660,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         where 'kabs_o2' denotes the oxygen absorption coefficients
         in cm-1, 'path_o2' is the oxygen absorption path given in cm,
-        'mu0' is the cosine of the solar zenith angle and a is an
+        'mu0' is the cosine of the solar zenith angle and 'a' is an
         empirical exponent (equal to 0.5641 for the molecular oxygen).
 
         Receive:

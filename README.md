@@ -2,6 +2,16 @@
 
 This library stores the Python implementation of UVa-GOA radiative transfer model developed by the Group of Atmospheric Optics from University of Valladolid.
 
+## Installation notes
+
+This library requires Python >= 2.7+ or Python >= 3.3 and NumPy >= 1.10. To install it, download the library, open a console in the folder where ``setup.py`` is located and type:
+
+```sh
+python setup.py install
+```
+
+In case that admin privileges are required, use the same command preceded by ``sudo``.
+
 ## Developer notes
 
 Some short notes regarding the commits to the git repository:

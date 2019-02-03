@@ -84,6 +84,7 @@ class TrnGasTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
+
 if __name__ == "__main__":
     unittest.main()
 
