@@ -41,7 +41,7 @@ kwargs = {
     "version":
         "0.3",
     "license":
-        "GPL-3.0",
+        "GNU General Public License v2 or later (GPLv2+)",
     "description":
         "Python implementation of UVa-GOA radiative transfer model",
     "author":
