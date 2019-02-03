@@ -39,7 +39,7 @@ kwargs = {
     "name":
         "Solo",
     "version":
-        "0.3",
+        "1.0.0",
     "license":
         "GNU General Public License v2 or later (GPLv2+)",
     "description":
