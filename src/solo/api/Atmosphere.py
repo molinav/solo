@@ -372,7 +372,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         tau, salb = (out[0], (out[1],)) if return_albedo else (out, ())
 
         # Compute the Rayleigh direct transmittance.
-        tdir = np.exp(-tau / mu0)
+        tdir = np.exp(-1.0 * tau / mu0)
 
         # Compute the global and diffuse transmittances.
         c = [2. / 3., 4. / 3.]
@@ -479,7 +479,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         r0 = (ak - 1. + w0) / (ak + 1. - w0)
 
         # Compute direct, global and diffuse transmittances.
-        tdir = np.exp(-tau / mu0)
+        tdir = np.exp(-1.0 * tau / mu0)
         tdir_k = tdir**ak
         tglb = (1. - r0**2) * tdir_k / (1. - (r0 * tdir_k)**2)
         tdif = tglb - tdir

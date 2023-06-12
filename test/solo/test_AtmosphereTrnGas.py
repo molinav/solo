@@ -31,7 +31,8 @@ from . import TestSolo
 class TestAtmosphereTrnGas(TestSolo):
     """Specific transmission tests for the :class:`Atmosphere` class."""
 
-    def calc_obj1(self, geo, atm, wvln):
+    @staticmethod
+    def calc_obj1(geo, atm, wvln):
         """Return total gas transmission for the given configuration."""
 
         args = [wvln, geo.mu0]

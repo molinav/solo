@@ -116,48 +116,45 @@ def _main(argv=None):
 
     # Parse --geo option.
     geo = [x[1] for x in optlist if x[0] == "--geo"]
-    if len(geo) == 0:
+    if not geo:
         print("Error: missing --geo option")
         sys.exit(1)
-    elif len(geo) != 1:
+    if len(geo) != 1:
         print("Error: multiple --geo options")
         sys.exit(1)
-    else:
-        try:
-            geo = Geometry.from_file(geo[0])
-        except Exception as err:  # pylint: disable=broad-except
-            print("{}\nError: wrong Geometry input file".format(err))
-            sys.exit(1)
+    try:
+        geo = Geometry.from_file(geo[0])
+    except Exception as err:  # pylint: disable=broad-except
+        print("{}\nError: wrong Geometry input file".format(err))
+        sys.exit(1)
 
     # Parse --atm option.
     atm = [x[1] for x in optlist if x[0] == "--atm"]
-    if len(atm) == 0:
+    if not atm:
         print("Error: missing --atm option")
         sys.exit(2)
-    elif len(atm) != 1:
+    if len(atm) != 1:
         print("Error: multiple --atm options")
         sys.exit(2)
-    else:
-        try:
-            atm = Atmosphere.from_file(atm[0])
-        except Exception as err:  # pylint: disable=broad-except
-            print("{}\nError: wrong Atmosphere input file".format(err))
-            sys.exit(2)
+    try:
+        atm = Atmosphere.from_file(atm[0])
+    except Exception as err:  # pylint: disable=broad-except
+        print("{}\nError: wrong Atmosphere input file".format(err))
+        sys.exit(2)
 
     # Parse --out option.
     out = [x[1] for x in optlist if x[0] == "--out"]
-    if len(out) == 0:
+    if not out:
         print("Error: missing --out option")
         sys.exit(3)
-    elif len(out) != 1:
+    if len(out) != 1:
         print("Error: multiple --out options")
         sys.exit(3)
-    else:
-        out = str(out[0])
-        out_cut = os.path.splitext(out)
-        out_glb = "".join([out_cut[0], "_glb", out_cut[1]])
-        out_dir = "".join([out_cut[0], "_dir", out_cut[1]])
-        out_dif = "".join([out_cut[0], "_dif", out_cut[1]])
+    out = str(out[0])
+    out_cut = os.path.splitext(out)
+    out_glb = "".join([out_cut[0], "_glb", out_cut[1]])
+    out_dir = "".join([out_cut[0], "_dir", out_cut[1]])
+    out_dif = "".join([out_cut[0], "_dif", out_cut[1]])
 
     # Parse --no-coupling option.
     coupling = [x[1] for x in optlist if x[0] == "--no-coupling"]

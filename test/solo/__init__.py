@@ -33,7 +33,8 @@ from solo.api import Atmosphere
 class TestSolo(unittest.TestCase):
     """Template class for :mod:`solo` test cases."""
 
-    def one(self):
+    @staticmethod
+    def one():
         """Return the one-tuple."""
 
         return (1,)

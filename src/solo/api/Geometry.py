@@ -339,11 +339,9 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 if the input file does not have a valid format
         """
 
-        # Define the possible list of input arguments depending on its number.
-        keys = {2: ["day", "sza"], 4: ["day", "sec", "lat", "lon"]}
-
-        # Define the converter from time strings to seconds.
         def timestr2num(txt):
+            """Converter function from time strings to seconds."""
+
             # Try to split the hours, minutes and seconds from time string.
             try:
                 nums = list(map(int, txt.decode().split(":")))
@@ -359,6 +357,9 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             # Any other case is not valid.
             raise ValueError("invalid UTC time format")
 
+        # Define the possible list of input arguments depending on its number.
+        keys = {2: ["day", "sza"], 4: ["day", "sec", "lat", "lon"]}
+
         # Try to open the file assuming that all the values are numbers.
         # Otherwise, raise an error.
         try:
@@ -373,7 +374,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             # If it does not work, it may be a single scenario in column form.
             except (ValueError, IndexError):
                 try:
-                    data = np.loadtxt(path, dtype=np.bytes_)
+                    data = np.loadtxt(path, dtype=bytes)
                     if data.shape == (4,):
                         data = np.atleast_2d(data)
                         args = [int(data[0, 0]), timestr2num(data[0, 1]),
