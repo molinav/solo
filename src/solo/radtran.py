@@ -113,10 +113,10 @@ if __name__ == "__main__":
 
     # Parse --geo option.
     geo = [x[1] for x in optlist if x[0] == "--geo"]
-    if len(geo) is 0:
+    if len(geo) == 0:
         print("Error: missing --geo option")
         sys.exit(1)
-    elif len(geo) is not 1:
+    elif len(geo) != 1:
         print("Error: multiple --geo options")
         sys.exit(1)
     else:
@@ -128,10 +128,10 @@ if __name__ == "__main__":
 
     # Parse --atm option.
     atm = [x[1] for x in optlist if x[0] == "--atm"]
-    if len(atm) is 0:
+    if len(atm) == 0:
         print("Error: missing --atm option")
         sys.exit(2)
-    elif len(atm) is not 1:
+    elif len(atm) != 1:
         print("Error: multiple --atm options")
         sys.exit(2)
     else:
@@ -143,10 +143,10 @@ if __name__ == "__main__":
 
     # Parse --out option.
     out = [x[1] for x in optlist if x[0] == "--out"]
-    if len(out) is 0:
+    if len(out) == 0:
         print("Error: missing --out option")
         sys.exit(3)
-    elif len(out) is not 1:
+    elif len(out) != 1:
         print("Error: multiple --out options")
         sys.exit(3)
     else:
@@ -167,4 +167,3 @@ if __name__ == "__main__":
     np.savetxt(out_glb, irr_glb.T, fmt="%+14.6E")
     np.savetxt(out_dir, irr_dir.T, fmt="%+14.6E")
     np.savetxt(out_dif, irr_dif.T, fmt="%+14.6E")
-
