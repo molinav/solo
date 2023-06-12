@@ -93,6 +93,13 @@ setup(**{
             "test/obj/geo/*.dat",
         ]
     },
+    "python_requires":
+        ", ".join([
+            ">=2.6",
+            "!=3.0.*",
+            "!=3.1.*",
+            "<3.12",
+        ]),
     "install_requires":
         install_requires,
     "project_urls": {
