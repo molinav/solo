@@ -1,0 +1,2 @@
+sphinx >= 5.3, < 6.2; python_version >= "3.6"
+furo >= 2022.4.7, < 2023.3.28; python_version >= "3.6"
