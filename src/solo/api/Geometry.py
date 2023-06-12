@@ -348,7 +348,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             except ValueError:
                 raise ValueError("invalid UTC time format")
             # If there is only one number, it is assumed as seconds.
-            if len(nums) is 1:
+            if len(nums) == 1:
                 return nums[0]
             # If there are 2 or three numbers, they are assumed as
             # [hours, minutes, (seconds)].
@@ -362,13 +362,13 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # Otherwise, raise an error.
         try:
             data = np.atleast_2d(np.loadtxt(path))
-            args = data.ravel() if data.shape[0] is 1 else data.T
+            args = data.ravel() if data.shape[0] == 1 else data.T
         # If it does not work, try to parse the second column as a timestring.
         except ValueError:
             try:
                 converters = {1: timestr2num}
                 data = np.atleast_2d(np.loadtxt(path, converters=converters))
-                args = data.ravel() if data.shape[0] is 1 else data.T
+                args = data.ravel() if data.shape[0] == 1 else data.T
             # If it does not work, it may be a single scenario in column form.
             except IndexError:
                 data = np.loadtxt(path, dtype=np.bytes_)
@@ -390,4 +390,3 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             raise ValueError("invalid file format")
 
         return Geometry(**kwargs)
-
