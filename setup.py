@@ -72,7 +72,7 @@ setup(**{
     "long_description_content_type":
         "text/markdown",
     "url":
-        "https://bitbucket.org/molinav/solo",
+        "https://github.com/molinav/solo",
     "author":
         "Víctor Molina García",
     "author_email":
@@ -95,4 +95,12 @@ setup(**{
     },
     "install_requires":
         install_requires,
+    "project_urls": {
+        "Bug Tracker":
+            "https://github.com/molinav/solo/issues",
+        "Documentation":
+            "https://github.com/molinav/solo/wiki",
+        "Source":
+            "https://github.com/molinav/solo",
+    },
 })
