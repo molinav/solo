@@ -88,10 +88,7 @@ setup(**{
     "package_data": {
         "solo": [
             "dat/*.dat",
-            "test/dat/*.dat",
-            "test/obj/atm/*.dat",
-            "test/obj/geo/*.dat",
-        ]
+        ],
     },
     "python_requires":
         ", ".join([
