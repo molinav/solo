@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""Core library classes."""
 
 from . Atmosphere import Atmosphere
 from . Geometry import Geometry
