@@ -100,4 +100,3 @@ if __name__ == "__main__":
     for path in glob.glob(pattern):
         if "__init__" not in path:
             subprocess.call([python_exec, path])
-
