@@ -25,12 +25,12 @@ from solo.api import Geometry
 from solo.api import Atmosphere
 
 
-UNITTEST_FOLDER = os.path.dirname(__file__)
-
-
 class TestSolo(unittest.TestCase):
+    """Template class for :mod:`solo` test cases."""
 
     def one(self):
+        """Return the one-tuple."""
+
         return (1,)
 
     def setUp(self):
