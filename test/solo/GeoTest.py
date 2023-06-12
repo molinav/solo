@@ -22,7 +22,7 @@ import os.path
 import unittest
 import numpy as np
 from solo.api import Geometry
-from solo.test import SoloTest
+from . import SoloTest
 
 
 UNITTEST_FOLDER = os.path.dirname(__file__)
@@ -113,4 +113,3 @@ class GeoTest(SoloTest):
 
 if __name__ == "__main__":
     unittest.main()
-

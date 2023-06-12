@@ -57,7 +57,7 @@ class SoloTest(unittest.TestCase):
             lat=np.asarray([np.degrees(self.geo0.lat[0]), 35.45, 40.13]),
             lon=np.asarray([np.degrees(self.geo0.lon[0]), 25.80, -9.51]),
             sza=np.asarray([np.degrees(self.geo0.sza[0]), 15.50, 30.50]),
-            day=np.asarray([self.geo0.day, 12, 250]))
+            day=np.asarray([self.geo0.day[0], 12, 250]))
         self.atm1 = Atmosphere(
             p=np.asarray([self.atm0.p[0], 875.4, 925.3]),
             rho=np.asarray([self.atm0.rho[0], 0.35, 0.7]),
@@ -100,4 +100,3 @@ if __name__ == "__main__":
     for path in glob.glob(pattern):
         if "__init__" not in path:
             subprocess.call([python_exec, path])
-

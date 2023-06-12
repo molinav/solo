@@ -20,7 +20,7 @@
 
 import unittest
 import numpy as np
-from solo.test import SoloTest
+from . import SoloTest
 
 
 class TrnGasTest(SoloTest):
@@ -90,7 +90,6 @@ class TrnGasTest(SoloTest):
         obj0 = self.result["tdir_gas"]
         shp1 = shp0 + self.one()
         obj1 = self.calcObj1(self.geo1, self.atm1, self.wvln[0])
-        args = [self.wvln[0], self.geo1.mu0]
         flag = np.allclose(obj1[0, 0], obj0[0], self.delta)
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
@@ -107,4 +106,3 @@ class TrnGasTest(SoloTest):
 
 if __name__ == "__main__":
     unittest.main()
-
