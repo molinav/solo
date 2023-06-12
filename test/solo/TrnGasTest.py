@@ -20,7 +20,7 @@
 
 import unittest
 import numpy as np
-from solo.test import SoloTest
+from . import SoloTest
 
 
 class TrnGasTest(SoloTest):

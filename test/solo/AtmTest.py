@@ -22,7 +22,7 @@ import os.path
 import unittest
 import numpy as np
 from solo.api import Atmosphere
-from solo.test import SoloTest
+from . import SoloTest
 
 
 UNITTEST_FOLDER = os.path.dirname(__file__)
