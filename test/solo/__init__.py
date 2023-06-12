@@ -86,17 +86,3 @@ class TestSolo(unittest.TestCase):
         self.geo1 = None
         self.atm1 = None
         self.result = None
-
-
-if __name__ == "__main__":
-
-    import sys
-    import glob
-    import subprocess
-
-    python_exec = "python{}".format(3 if sys.hexversion >= 0x03000000 else "")
-
-    pattern = os.path.join(UNITTEST_FOLDER, "*.py")
-    for path in glob.glob(pattern):
-        if "__init__" not in path:
-            subprocess.call([python_exec, path])
