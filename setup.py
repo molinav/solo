@@ -62,7 +62,7 @@ setup(**{
     "name":
         "solo",
     "version":
-        "1.0.0+dev",
+        get_version("solo"),
     "license":
         "GNU General Public License v2 or later (GPLv2+)",
     "description":
