@@ -1,23 +1,37 @@
-# python-solo
+# solo
 
-This library stores the Python implementation of UVa-GOA radiative transfer model developed by the Group of Atmospheric Optics from University of Valladolid.
+This library is the core of the Python implementation of the SSolar-GOA
+radiative transfer model. The library was developed by Víctor Molina
+García for the Group of Atmospheric Optics (University of Valladolid).
 
-## Installation notes
+## Installation
 
-This library requires Python >= 2.7+ or Python >= 3.3 and NumPy >= 1.10. To install it, download the library, open a console in the folder where ``setup.py`` is located and type:
+This library requires Python >= 2.7+ or Python >= 3.3 and NumPy >= 1.10.
+To install it, download the library, open a console in the folder where
+``setup.py`` is located and type:
 
 ```sh
 python setup.py install
 ```
 
-In case that admin privileges are required, use the same command preceded by ``sudo``.
+In case that admin privileges are required, use the same command
+preceded by ``sudo``.
 
-## Developer notes
+## License
 
-Some short notes regarding the commits to the git repository:
+```
+Copyright (c) 2017-2019, 2023 Víctor Molina García
 
-* Use short commit titles, no more than 50 characters.
-* Write commit titles starting with capital letter and in imperative form, e.g. "Add" instead of "Added", "Fix" instead of "Fixed".
-* If the commit title is too short to describe the global modifications done by the commit, add a description paragraph after the commit title (leave a blank line in between).
-* If possible, avoid the use of tab characters and replace them with four space characters, to avoid mixtures of tabs and spaces through the files. This can also be configured in the settings of various editors.
+solo is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
 
+solo is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with solo; if not, see <https://www.gnu.org/licenses/>.
+```
