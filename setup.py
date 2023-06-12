@@ -99,6 +99,14 @@ setup(**{
         ]),
     "install_requires":
         install_requires,
+    "extras_require": {
+        "doc":
+            get_content("requirements-doc.txt", splitlines=True),
+        "lint":
+            get_content("requirements-lint.txt", splitlines=True),
+        "test":
+            get_content("requirements-test.txt", splitlines=True),
+    },
     "project_urls": {
         "Bug Tracker":
             "https://github.com/molinav/solo/issues",
