@@ -39,7 +39,8 @@ class TestSolo(unittest.TestCase):
         self.delta = 5E-4
 
         # Read the file with reference data.
-        path = os.path.join(UNITTEST_FOLDER, "dat", "transmittance.dat")
+        here = os.path.dirname(__file__)
+        path = os.path.join(here, "dat", "transmittance.dat")
         data = np.loadtxt(path).T
 
         # Extract the set of wavelengths in nanometers and microns.
