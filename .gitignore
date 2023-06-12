@@ -1,2 +1,17 @@
+.eggs
+build
+dist
+*.egg-info
 *.pyc
+*.pyd
 *.so
+
+doc/build
+doc/source/_autosummary
+
+htmlcov
+.cache
+.coverage
+.pytest_cache
+
+.vscode
