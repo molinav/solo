@@ -21,6 +21,7 @@
 
 from __future__ import print_function
 from __future__ import division
+import sys
 import os.path
 import numpy as np
 
@@ -100,16 +101,17 @@ def radtran(geo, atm, wvln=None, coupling=True):
     return out
 
 
-if __name__ == "__main__":
+def _main(argv=None):
+    """Main script function."""
 
-    import sys
     import getopt
-    from api import Geometry
-    from api import Atmosphere
+    from . api import Geometry
+    from . api import Atmosphere
 
     # Read arguments and options.
+    argv = argv if argv is not None else sys.argv[1:]
     optkeys = ["geo=", "atm=", "out=", "no-coupling"]
-    optlist, args = getopt.getopt(sys.argv[1:], "", optkeys)
+    optlist, _ = getopt.getopt(argv, "", optkeys)
 
     # Parse --geo option.
     geo = [x[1] for x in optlist if x[0] == "--geo"]
@@ -167,3 +169,7 @@ if __name__ == "__main__":
     np.savetxt(out_glb, irr_glb.T, fmt="%+14.6E")
     np.savetxt(out_dir, irr_dir.T, fmt="%+14.6E")
     np.savetxt(out_dif, irr_dif.T, fmt="%+14.6E")
+
+
+if __name__ == "__main__":
+    sys.exit(_main())
