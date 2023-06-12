@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""Geometry class encapsulation."""
 
 from __future__ import division
 from collections import namedtuple
@@ -65,7 +66,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             cosine of the solar zenith angles, ranged from -1 to +1
     """
 
-    def __new__(cls, day, sec=None, lat=None, lon=None, sza=None, mode="deg"):
+    def __new__(cls, day, sec=None,  # pylint: disable=too-many-arguments
+                lat=None, lon=None, sza=None, mode="deg"):
         """Return a new instance of Geometry.
 
         Receive:
@@ -293,11 +295,11 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # the geolocation attributes are not missing.
         if self.sza is not None:
             return self.sza
-        elif self.sec is None:
+        if self.sec is None:
             raise ValueError("UTC seconds missing")
-        elif self.lat is None:
+        if self.lat is None:
             raise ValueError("latitude values missing")
-        elif self.lon is None:
+        if self.lon is None:
             raise ValueError("longitude values missing")
 
         # Compute the mean solar time (MST) as a function of the UTC time and
@@ -352,11 +354,10 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 return nums[0]
             # If there are 2 or three numbers, they are assumed as
             # [hours, minutes, (seconds)].
-            elif len(nums) in [2, 3]:
+            if len(nums) in [2, 3]:
                 return sum(x * y for x, y in zip(nums, [3600, 60, 1]))
             # Any other case is not valid.
-            else:
-                raise ValueError("invalid UTC time format")
+            raise ValueError("invalid UTC time format")
 
         # Try to open the file assuming that all the values are numbers.
         # Otherwise, raise an error.
@@ -371,21 +372,22 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 args = data.ravel() if data.shape[0] == 1 else data.T
             # If it does not work, it may be a single scenario in column form.
             except (ValueError, IndexError):
-                data = np.loadtxt(path, dtype=np.bytes_)
-                if data.shape == (4,):
-                    data = np.atleast_2d(data)
-                    args = [int(data[0, 0]), timestr2num(data[0, 1]),
-                            float(data[0, 2]), float(data[0, 3])]
-                else:
+                try:
+                    data = np.loadtxt(path, dtype=np.bytes_)
+                    if data.shape == (4,):
+                        data = np.atleast_2d(data)
+                        args = [int(data[0, 0]), timestr2num(data[0, 1]),
+                                float(data[0, 2]), float(data[0, 3])]
+                    else:
+                        raise ValueError("invalid file format")
+                # If nothing works, then the file cannot be imported.
+                except ValueError:
                     raise ValueError("invalid file format")
-            # If nothing works, then the file cannot be imported.
-            except ValueError:
-                raise ValueError("invalid file format")
 
         # Parse the columns into a possible combination of input arguments,
         # otherwise raise an error.
         try:
-            kwargs = {k: v for k, v in zip(keys[data.shape[1]], args)}
+            kwargs = dict(zip(keys[data.shape[1]], args))
         except KeyError:
             raise ValueError("invalid file format")
 

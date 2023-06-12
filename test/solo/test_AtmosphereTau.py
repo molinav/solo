@@ -17,15 +17,23 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""Specific optical thickness tests for the :class:`Atmosphere` class."""
 
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
 import numpy as np
-from . import SoloTest
+from . import TestSolo
 
 
-class TauTest(SoloTest):
+class TestAtmosphereTau(TestSolo):
+    """Specific optical thickness tests for the :class:`Atmosphere` class."""
 
-    def testTauRayleigh_Atm0D_Val0D(self):
+    def test_tau_rayleigh_atm0d_val0d(self):
+        """Test Rayleigh optical thickness."""
+
         shp0 = ()
         obj0 = self.result["tau_ray"]
         shp1 = 2 * self.one() + shp0
@@ -34,7 +42,9 @@ class TauTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
-    def testTauRayleigh_Atm0D_Val1D(self):
+    def test_tau_rayleigh_atm0d_val1d(self):
+        """Test Rayleigh optical thickness."""
+
         shp0 = (self.wvln_um.size,)
         obj0 = self.result["tau_ray"]
         shp1 = self.one() + shp0
@@ -43,7 +53,9 @@ class TauTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
-    def testTauRayleigh_Atm1D_Val0D(self):
+    def test_tau_rayleigh_atm1d_val0d(self):
+        """Test Rayleigh optical thickness."""
+
         shp0 = (self.atm1.nscen,)
         obj0 = self.result["tau_ray"]
         shp1 = shp0 + self.one()
@@ -52,7 +64,9 @@ class TauTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
-    def testTauRayleigh_Atm1D_Val1D(self):
+    def test_tau_rayleigh_atm1d_val1d(self):
+        """Test Rayleigh optical thickness."""
+
         shp0 = (self.atm1.nscen, self.wvln_um.size,)
         obj0 = self.result["tau_ray"]
         shp1 = shp0
@@ -61,7 +75,9 @@ class TauTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
-    def testTauAerosols_Atm0D_Val0D(self):
+    def test_tau_aerosols_atm0d_val0d(self):
+        """Test aerosol optical thickness."""
+
         shp0 = ()
         obj0 = self.result["tau_aer"]
         shp1 = 2 * self.one() + shp0
@@ -70,7 +86,9 @@ class TauTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
-    def testTauAerosols_Atm0D_Val1D(self):
+    def test_tau_aerosols_atm0d_val1d(self):
+        """Test aerosol optical thickness."""
+
         shp0 = (self.wvln_um.size,)
         obj0 = self.result["tau_aer"]
         shp1 = self.one() + shp0
@@ -79,7 +97,9 @@ class TauTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
-    def testTauAerosols_Atm1D_Val0D(self):
+    def test_tau_aerosols_atm1d_val0d(self):
+        """Test aerosol optical thickness."""
+
         shp0 = (self.atm1.nscen,)
         obj0 = self.result["tau_aer"]
         shp1 = shp0 + self.one()
@@ -88,7 +108,9 @@ class TauTest(SoloTest):
         self.assertTupleEqual(obj1.shape, shp1)
         self.assertTrue(flag)
 
-    def testTauAerosols_Atm1D_Val1D(self):
+    def test_tau_aerosols_atm1d_val1d(self):
+        """Test aerosol optical thickness."""
+
         shp0 = (self.atm1.nscen, self.wvln_um.size,)
         obj0 = self.result["tau_aer"]
         shp1 = shp0

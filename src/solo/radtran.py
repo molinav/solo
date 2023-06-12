@@ -18,9 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""radtran function encapsulation."""
 
 from __future__ import print_function
 from __future__ import division
+import sys
 import os.path
 import numpy as np
 
@@ -77,7 +79,7 @@ def radtran(geo, atm, wvln=None, coupling=True):
 
     # Compute the transmittance due to Rayleigh and aerosols.
     args = [wvln_um, geo.mu0, True, coupling]
-    tglb_mix, tdir_mix, tdif_mix, atm_alb = atm.trn_mixture(*args)
+    tglb_mix, tdir_mix, _tdif_mix, atm_alb = atm.trn_mixture(*args)
 
     # Compute the transmittance due to gas absorption.
     args = [wvln, geo.mu0]
@@ -100,16 +102,17 @@ def radtran(geo, atm, wvln=None, coupling=True):
     return out
 
 
-if __name__ == "__main__":
+def _main(argv=None):
+    """Main script function."""
 
-    import sys
     import getopt
-    from api import Geometry
-    from api import Atmosphere
+    from . api import Geometry
+    from . api import Atmosphere
 
     # Read arguments and options.
+    argv = argv if argv is not None else sys.argv[1:]
     optkeys = ["geo=", "atm=", "out=", "no-coupling"]
-    optlist, args = getopt.getopt(sys.argv[1:], "", optkeys)
+    optlist, _ = getopt.getopt(argv, "", optkeys)
 
     # Parse --geo option.
     geo = [x[1] for x in optlist if x[0] == "--geo"]
@@ -122,7 +125,7 @@ if __name__ == "__main__":
     else:
         try:
             geo = Geometry.from_file(geo[0])
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             print("{}\nError: wrong Geometry input file".format(err))
             sys.exit(1)
 
@@ -137,7 +140,7 @@ if __name__ == "__main__":
     else:
         try:
             atm = Atmosphere.from_file(atm[0])
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             print("{}\nError: wrong Atmosphere input file".format(err))
             sys.exit(2)
 
@@ -167,3 +170,7 @@ if __name__ == "__main__":
     np.savetxt(out_glb, irr_glb.T, fmt="%+14.6E")
     np.savetxt(out_dir, irr_dir.T, fmt="%+14.6E")
     np.savetxt(out_dif, irr_dif.T, fmt="%+14.6E")
+
+
+if __name__ == "__main__":
+    sys.exit(_main())

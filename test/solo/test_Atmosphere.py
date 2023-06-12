@@ -17,21 +17,28 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""Basic tests for the :class:`Atmosphere` class."""
 
 import os.path
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
 import numpy as np
 from solo.api import Atmosphere
-from . import SoloTest
+from . import TestSolo
 
 
 UNITTEST_FOLDER = os.path.dirname(__file__)
 ATMOSPHERE_FOLDER = os.path.join(UNITTEST_FOLDER, "obj", "atm")
 
 
-class AtmTest(SoloTest):
+class TestAtmosphere(TestSolo):
+    """Basic tests for the :class:`Atmosphere` class."""
 
-    def checkAtmEqual(self, atm1, atm2):
+    def check_atm_equal(self, atm1, atm2):
+        """Generic equal check for :class:`Atmosphere` classes."""
 
         self.assertTrue(np.allclose(atm1.p, atm2.p))
         self.assertTrue(np.allclose(atm1.rho, atm2.rho))
@@ -42,41 +49,46 @@ class AtmTest(SoloTest):
         self.assertTrue(np.allclose(atm1.w0, atm2.w0))
         self.assertTrue(np.allclose(atm1.g, atm2.g))
 
-    def testAtm11(self):
+    def test_atm11(self):
+        """Test loading of `atm11.dat` from file."""
 
         path = os.path.join(ATMOSPHERE_FOLDER, "atm11.dat")
         atm1 = Atmosphere.from_file(path)
         atm2 = Atmosphere(
             p=800, rho=0.2, o3=300, h2o=0.4, alpha=1.5, beta=0.05,
             w0=0.9, g=0.85)
-        self.checkAtmEqual(atm1, atm2)
+        self.check_atm_equal(atm1, atm2)
 
-    def testAtm12(self):
+    def test_atm12(self):
+        """Test loading of `atm12.dat` from file."""
 
         path = os.path.join(ATMOSPHERE_FOLDER, "atm12.dat")
         atm1 = Atmosphere.from_file(path)
         atm2 = Atmosphere(
             p=800, rho=0.2, o3=300, h2o=0.4, alpha=1.5, beta=0.05)
-        self.checkAtmEqual(atm1, atm2)
+        self.check_atm_equal(atm1, atm2)
 
-    def testAtm21(self):
+    def test_atm21(self):
+        """Test loading of `atm21.dat` from file."""
 
         path = os.path.join(ATMOSPHERE_FOLDER, "atm21.dat")
         atm1 = Atmosphere.from_file(path)
         atm2 = Atmosphere(
             p=800, rho=0.2, o3=300, h2o=0.4, alpha=1.5, beta=0.05,
             w0=0.85, g=0.95)
-        self.checkAtmEqual(atm1, atm2)
+        self.check_atm_equal(atm1, atm2)
 
-    def testAtm22(self):
+    def test_atm22(self):
+        """Test loading of `atm22.dat` from file."""
 
         path = os.path.join(ATMOSPHERE_FOLDER, "atm22.dat")
         atm1 = Atmosphere.from_file(path)
         atm2 = Atmosphere(
             p=800, rho=0.2, o3=300, h2o=0.4, alpha=1.5, beta=0.05)
-        self.checkAtmEqual(atm1, atm2)
+        self.check_atm_equal(atm1, atm2)
 
-    def testAtm31(self):
+    def test_atm31(self):
+        """Test loading of `atm31.dat` from file."""
 
         path = os.path.join(ATMOSPHERE_FOLDER, "atm31.dat")
         atm1 = Atmosphere.from_file(path)
@@ -89,9 +101,10 @@ class AtmTest(SoloTest):
             beta=np.array([0.05, 0.01, 0.02]),
             w0=np.array([0.85, 0.8, 0.85]),
             g=np.array([0.95, 0.92, 0.93]))
-        self.checkAtmEqual(atm1, atm2)
+        self.check_atm_equal(atm1, atm2)
 
-    def testAtm32(self):
+    def test_atm32(self):
+        """Test loading of `atm32.dat` from file."""
 
         path = os.path.join(ATMOSPHERE_FOLDER, "atm32.dat")
         atm1 = Atmosphere.from_file(path)
@@ -102,7 +115,7 @@ class AtmTest(SoloTest):
             h2o=np.array([0.4, 0.5, 0.4]),
             alpha=np.array([1.5, 1.4, 1.1]),
             beta=np.array([0.05, 0.01, 0.02]))
-        self.checkAtmEqual(atm1, atm2)
+        self.check_atm_equal(atm1, atm2)
 
 
 if __name__ == "__main__":

@@ -17,20 +17,25 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""Template class for :mod:`solo` test cases."""
 
 import os.path
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
 import numpy as np
 from solo.api import Geometry
 from solo.api import Atmosphere
 
 
-UNITTEST_FOLDER = os.path.dirname(__file__)
-
-
-class SoloTest(unittest.TestCase):
+class TestSolo(unittest.TestCase):
+    """Template class for :mod:`solo` test cases."""
 
     def one(self):
+        """Return the one-tuple."""
+
         return (1,)
 
     def setUp(self):
@@ -39,7 +44,8 @@ class SoloTest(unittest.TestCase):
         self.delta = 5E-4
 
         # Read the file with reference data.
-        path = os.path.join(UNITTEST_FOLDER, "dat", "transmittance.dat")
+        here = os.path.dirname(__file__)
+        path = os.path.join(here, "dat", "transmittance.dat")
         data = np.loadtxt(path).T
 
         # Extract the set of wavelengths in nanometers and microns.
@@ -86,17 +92,3 @@ class SoloTest(unittest.TestCase):
         self.geo1 = None
         self.atm1 = None
         self.result = None
-
-
-if __name__ == "__main__":
-
-    import sys
-    import glob
-    import subprocess
-
-    python_exec = "python{}".format(3 if sys.hexversion >= 0x03000000 else "")
-
-    pattern = os.path.join(UNITTEST_FOLDER, "*.py")
-    for path in glob.glob(pattern):
-        if "__init__" not in path:
-            subprocess.call([python_exec, path])
