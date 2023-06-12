@@ -6,10 +6,9 @@ García for the Group of Atmospheric Optics (University of Valladolid).
 
 ## Installation
 
-This library requires Python >= 2.7+ or Python >= 3.3 and NumPy >= 1.10.
+This library requires Python >= 2.6+ or Python >= 3.2 and NumPy >= 1.11.
 To install it, download the library, open a console in the folder where
 ``setup.py`` is located and type:
-
 ```sh
 python setup.py install
 ```
