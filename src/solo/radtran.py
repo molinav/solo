@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""radtran function encapsulation."""
 
 from __future__ import print_function
 from __future__ import division
@@ -78,7 +79,7 @@ def radtran(geo, atm, wvln=None, coupling=True):
 
     # Compute the transmittance due to Rayleigh and aerosols.
     args = [wvln_um, geo.mu0, True, coupling]
-    tglb_mix, tdir_mix, tdif_mix, atm_alb = atm.trn_mixture(*args)
+    tglb_mix, tdir_mix, _tdif_mix, atm_alb = atm.trn_mixture(*args)
 
     # Compute the transmittance due to gas absorption.
     args = [wvln, geo.mu0]
@@ -124,7 +125,7 @@ def _main(argv=None):
     else:
         try:
             geo = Geometry.from_file(geo[0])
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             print("{}\nError: wrong Geometry input file".format(err))
             sys.exit(1)
 
@@ -139,7 +140,7 @@ def _main(argv=None):
     else:
         try:
             atm = Atmosphere.from_file(atm[0])
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             print("{}\nError: wrong Atmosphere input file".format(err))
             sys.exit(2)
 
