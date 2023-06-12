@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+# flake8: noqa: E122
 #
 # Copyright (c) 2017-2019, 2023 Víctor Molina García
 #
