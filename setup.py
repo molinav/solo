@@ -18,16 +18,47 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""solo -- Core of the SSolar-GOA radiative transfer library."""
 
-try:
-    from setuptools import setup
-    install_requires = {"install_requires": "numpy"}
-except ImportError:
-    from distutils.core import setup 
-    install_requires = {}
+import io
+import os
+import re
+import sys
+from setuptools import setup
+from setuptools import find_packages
 
 
-kwargs = {
+def get_content(name, splitlines=False):
+    """Return the file contents with project root as root folder."""
+
+    here = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(here, name)
+    with io.open(path, "r", encoding="utf-8") as fd:
+        content = fd.read()
+    if splitlines:
+        content = [row for row in content.splitlines() if row]
+    return content
+
+
+def get_version(pkgname):
+    """Return package version without importing the file."""
+
+    here = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(here, "src", pkgname, "__init__.py")
+    with io.open(path, "r", encoding="utf-8") as fd:
+        pattern = r"""\n__version__[ ]*=[ ]*["']([^"]+)["']"""
+        return re.search(pattern, fd.read()).group(1)
+
+
+install_requires = get_content("requirements.txt", splitlines=True)
+if sys.version_info[:2] == (3, 2):
+    # Hack for Python 3.2 because pip < 8 cannot handle version markers.
+    marker = '; python_version == "3.2"'
+    install_requires = [
+        item.replace(marker, "") for item in install_requires
+        if item.endswith(marker)]
+
+setup(**{
     "name":
         "solo",
     "version":
@@ -35,22 +66,25 @@ kwargs = {
     "license":
         "GNU General Public License v2 or later (GPLv2+)",
     "description":
-        "Python implementation of UVa-GOA radiative transfer model",
+        "Core of the SSolar-GOA radiative transfer library",
+    "long_description":
+        get_content("README.md"),
+    "long_description_content_type":
+        "text/markdown",
+    "url":
+        "https://bitbucket.org/molinav/solo",
     "author":
-        "Victor Molina Garcia",
+        "Víctor Molina García",
     "author_email":
         "victor@goa.uva.es",
     "maintainer":
-        "Victor Molina Garcia",
+        "Víctor Molina García",
     "maintainer_email":
         "victor@goa.uva.es",
-    "url":
-        "https://bitbucket.org/molinav/solo",
-    "packages": [
-        "solo",
-        "solo.api",
-        "solo.test",
-    ],
+    "package_dir":
+        {"": "src"},
+    "packages":
+        find_packages(where="src"),
     "package_data": {
         "solo": [
             "dat/*.dat",
@@ -59,8 +93,6 @@ kwargs = {
             "test/obj/geo/*.dat",
         ]
     },
-}
-
-kwargs.update(install_requires)
-setup(**kwargs)
-
+    "install_requires":
+        install_requires,
+})
