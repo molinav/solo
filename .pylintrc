@@ -188,6 +188,7 @@ good-names=a, b, c, d, f,
            t, x, y, z,
            x1, x2,
            db, fd, tz, ex,
+           g, w0, ak, r0,
            _
 
 # Include a hint for the correct naming format with invalid-name.

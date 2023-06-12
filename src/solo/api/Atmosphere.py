@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""Atmosphere class encapsulation."""
 
 from __future__ import division
 from collections import namedtuple
@@ -71,7 +72,8 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             aerosol asymmetry parameter
     """
 
-    def __new__(cls, p, rho, o3, h2o, alpha, beta, w0=None, g=None):
+    def __new__(cls, p, rho, o3, h2o,  # pylint: disable=too-many-arguments
+                alpha, beta, w0=None, g=None):
         """Return a new instance of Atmosphere.
 
         Receive:
@@ -474,7 +476,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
         # Compute intermediate parameters.
         ak = np.sqrt((1. - w0) * (1. - w0 * g))
-        r0 = ((ak - 1. + w0) / (ak + 1. - w0))
+        r0 = (ak - 1. + w0) / (ak + 1. - w0)
 
         # Compute direct, global and diffuse transmittances.
         tdir = np.exp(-tau / mu0)
@@ -545,11 +547,11 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             args = [wvln_um, mu0, return_albedo]
             # Compute Rayleigh transmittances.
             out = self.trn_rayleigh(*args)
-            tglb_ray, tdir_ray, tdif_ray = out[:3]
+            tglb_ray, tdir_ray, _tdif_ray = out[:3]
             sray = out[3] if return_albedo else ()
             # Compute aerosol transmittances.
             out = self.trn_aerosols(*args)
-            tglb_aer, tdir_aer, tdif_aer = out[:3]
+            tglb_aer, tdir_aer, _tdif_aer = out[:3]
             saer = out[3] if return_albedo else ()
             # Compute mix transmittances without Rayleigh-aerosol coupling.
             tglb = tglb_ray * tglb_aer
@@ -663,7 +665,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         # wavelengths by using linear interpolation, and convert them to
         # absorption coefficients in cm-1 by using Loschmidt's number.
         ozone_xsec = np.interp(wvln, *self.abscoef[[0, 3]])
-        ozone_coef = (2.687E19 * ozone_xsec)
+        ozone_coef = 2.687E19 * ozone_xsec
 
         # Convert from ozone amount in DU to ozone absorption path in cm.
         ozone_path = (1E-3 * self.o3)[:, None]
