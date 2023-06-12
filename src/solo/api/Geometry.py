@@ -66,7 +66,6 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             cosine of the solar zenith angles, ranged from -1 to +1
     """
 
-
     def __new__(cls, day, sec=None,  # pylint: disable=too-many-arguments
                 lat=None, lon=None, sza=None, mode="deg"):
         """Return a new instance of Geometry.
