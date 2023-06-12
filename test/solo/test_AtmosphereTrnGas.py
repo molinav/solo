@@ -20,10 +20,10 @@
 
 import unittest
 import numpy as np
-from . import SoloTest
+from . import TestSolo
 
 
-class TrnGasTest(SoloTest):
+class TestAtmosphereTrnGas(TestSolo):
 
     def calcObj1(self, geo, atm, wvln):
         args = [wvln, geo.mu0]

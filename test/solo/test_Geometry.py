@@ -22,14 +22,14 @@ import os.path
 import unittest
 import numpy as np
 from solo.api import Geometry
-from . import SoloTest
+from . import TestSolo
 
 
 UNITTEST_FOLDER = os.path.dirname(__file__)
 GEOMETRY_FOLDER = os.path.join(UNITTEST_FOLDER, "obj", "geo")
 
 
-class GeoTest(SoloTest):
+class TestGeometry(TestSolo):
 
     def checkGeoEqual(self, geo1, geo2):
 

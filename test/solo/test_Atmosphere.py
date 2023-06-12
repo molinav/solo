@@ -22,14 +22,14 @@ import os.path
 import unittest
 import numpy as np
 from solo.api import Atmosphere
-from . import SoloTest
+from . import TestSolo
 
 
 UNITTEST_FOLDER = os.path.dirname(__file__)
 ATMOSPHERE_FOLDER = os.path.join(UNITTEST_FOLDER, "obj", "atm")
 
 
-class AtmTest(SoloTest):
+class TestAtmosphere(TestSolo):
 
     def checkAtmEqual(self, atm1, atm2):
 

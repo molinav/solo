@@ -20,10 +20,10 @@
 
 import unittest
 import numpy as np
-from . import SoloTest
+from . import TestSolo
 
 
-class TauTest(SoloTest):
+class TestAtmosphereTau(TestSolo):
 
     def testTauRayleigh_Atm0D_Val0D(self):
         shp0 = ()

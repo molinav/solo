@@ -28,7 +28,7 @@ from solo.api import Atmosphere
 UNITTEST_FOLDER = os.path.dirname(__file__)
 
 
-class SoloTest(unittest.TestCase):
+class TestSolo(unittest.TestCase):
 
     def one(self):
         return (1,)
