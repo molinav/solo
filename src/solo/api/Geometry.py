@@ -370,7 +370,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 data = np.atleast_2d(np.loadtxt(path, converters=converters))
                 args = data.ravel() if data.shape[0] == 1 else data.T
             # If it does not work, it may be a single scenario in column form.
-            except IndexError:
+            except (ValueError, IndexError):
                 data = np.loadtxt(path, dtype=np.bytes_)
                 if data.shape == (4,):
                     data = np.atleast_2d(data)
