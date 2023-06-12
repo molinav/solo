@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
+"""Template class for :mod:`solo` test cases."""
 
 import os.path
 try:
