@@ -1,0 +1,172 @@
+name: solo
+
+env:
+  PYTHONWARNINGS: "ignore:DEPRECATION"
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+  PIP_PREFER_BINARY: 1
+  PIP_TIMEOUT: 10
+  PIP_RETRIES: 0
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          ["2.6", "2.7", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8",
+           "3.9", "3.10", "3.11"]
+      max-parallel: 6
+      fail-fast: false
+    container: "pylegacy/python:${{ matrix.python-version }}-debian-9"
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v1
+      -
+        name: Install lint requirements
+        run: |
+          pip install -r requirements-lint.txt
+      -
+        name: Install library requirements
+        run: |
+          pip install -r requirements.txt
+      -
+        name: Run Flake8
+        run: |
+          if [ -x "$(command -v flake8)" ]; then flake8; fi
+      -
+        name: Run PyLint
+        run: |
+          if [ -x "$(command -v pylint)" ]; then pylint src test; fi
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          ["2.6", "2.7", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8",
+           "3.9", "3.10", "3.11"]
+      max-parallel: 6
+      fail-fast: false
+    container: "pylegacy/python:${{ matrix.python-version }}-debian-9"
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v1
+      -
+        name: Build wheel
+        run: |
+          if [ "${{ matrix.python-version }}" = "3.11" ]; then
+              kwds="--no-build-isolation"
+          fi
+          python setup.py sdist
+          pip wheel -w dist --no-deps ${kwds} dist/*.zip
+      -
+        name: Upload build artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: build-${{ matrix.python-version }}
+          path: dist
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          ["2.6", "2.7", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8",
+           "3.9", "3.10", "3.11"]
+      max-parallel: 6
+      fail-fast: false
+    container: "pylegacy/python:${{ matrix.python-version }}-debian-9"
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v1
+      -
+        name: Download build artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: build-${{ matrix.python-version }}
+          path: dist
+      -
+        name: Install test requirements
+        run: |
+          pip install -r requirements-test.txt
+      -
+        name: Install package
+        run: |
+          pip install dist/*.whl
+      -
+        name: Test package
+        run: |
+          export COVERAGE_FILE=.coverage.${{ matrix.python-version }}
+          pkg=$(find src -mindepth 1 -maxdepth 1 -type d | head -n1 | xargs basename)
+          python -m pytest                                                    \
+              --cov="${pkg}" --cov-report=term                                \
+              --ignore=dist --ignore=build
+      -
+        name: Upload test artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: test
+          path: ./.coverage.${{ matrix.python-version }}
+
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+    container: "pylegacy/python:3.8-debian-9"
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v1
+      -
+        name: Download test artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: test
+          path: ./
+      -
+        name: Install test requirements
+        run: |
+          pip install -r requirements-test.txt
+      -
+        name: Compute combined coverage
+        run: |
+          coverage combine
+          coverage html
+          coverage report
+      -
+        name: Upload coverage artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: coverage
+          path: htmlcov
+
+  upload:
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    needs: test
+    runs-on: ubuntu-latest
+    container: "pylegacy/python:3.8-debian-9"
+    steps:
+      -
+        name: Download build artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: build-${{ matrix.python-version }}
+          path: dist
+      -
+        name: Install requirements
+        run: |
+          pip install twine
+      -
+        name: Check distributables
+        run: |
+          python -m twine check dist/*
