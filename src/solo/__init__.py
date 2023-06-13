@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
-"""solo -- Core of the SSolar-GOA radiative transfer library."""
+"""solo -- Core of the radiative transfer library SSolar-GOA."""
 
 from . radtran import radtran
 

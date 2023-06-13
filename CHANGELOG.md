@@ -27,7 +27,7 @@ https://semver.org/spec/v2.0.0.html
 ## [1.0.0] - 2019-02-03
 
 ### Added
-- Initial Python implementation of SSolar-GOA model:
+- Initial Python implementation of the SSolar-GOA model:
   - Core classes `Atmosphere` and `Geometry`.
   - Main radiative transfer function `radtran`.
   - First library tests.

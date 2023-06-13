@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
-"""solo -- Core of the SSolar-GOA radiative transfer library."""
+"""solo -- Core of the radiative transfer library SSolar-GOA."""
 
 import io
 import os
@@ -67,7 +67,7 @@ setup(**{
     "license":
         "GNU General Public License v2 or later (GPLv2+)",
     "description":
-        "Core of the SSolar-GOA radiative transfer library",
+        "Core of the radiative transfer library SSolar-GOA",
     "long_description":
         get_content("README.md"),
     "long_description_content_type":
