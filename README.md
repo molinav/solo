@@ -2,19 +2,16 @@
 
 This library is the core of the Python implementation of the SSolar-GOA
 radiative transfer model. The library was developed by Víctor Molina
-García for the Group of Atmospheric Optics (University of Valladolid).
+García ([@molinav]) for the Group of Atmospheric Optics (University of
+Valladolid).
 
 ## Installation
 
-This library requires Python >= 2.6+ or Python >= 3.2 and NumPy >= 1.11.
-To install it, download the library, open a console in the folder where
-``setup.py`` is located and type:
-```sh
-python setup.py install
-```
+You can install [`solo`] from this repository using [`pip`]:
 
-In case that admin privileges are required, use the same command
-preceded by ``sudo``.
+```sh
+python -m pip install https://github.com/molinav/solo/archive/refs/heads/develop.zip
+```
 
 ## License
 
@@ -34,3 +31,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with solo; if not, see <https://www.gnu.org/licenses/>.
 ```
+
+[@molinav]:
+https://github.com/molinav
+[`solo`]:
+https://github.com/molinav/solo
+[`pip`]:
+https:/pip.pypa.io/
