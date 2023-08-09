@@ -119,7 +119,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         elif mode.lower() == "deg":
             to_radians = np.radians
         else:
-            raise ValueError("invalid value for 'mode': {}".format(mode))
+            raise ValueError("invalid value for 'mode': {0}".format(mode))
 
         # Check that the Julian days are within valid range.
         if np.any(day < 1) or np.any(day > 366):

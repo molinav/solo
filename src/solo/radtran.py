@@ -136,7 +136,7 @@ def _main(argv=None):
     try:
         geo = Geometry.from_file(geo[0])
     except Exception as err:  # pylint: disable=broad-except
-        print("{}\nError: wrong Geometry input file".format(err))
+        print("{0}\nError: wrong Geometry input file".format(err))
         sys.exit(1)
 
     # Parse --atm option.
@@ -150,7 +150,7 @@ def _main(argv=None):
     try:
         atm = Atmosphere.from_file(atm[0])
     except Exception as err:  # pylint: disable=broad-except
-        print("{}\nError: wrong Atmosphere input file".format(err))
+        print("{0}\nError: wrong Atmosphere input file".format(err))
         sys.exit(2)
 
     # Parse --out option.
