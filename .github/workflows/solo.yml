@@ -154,6 +154,29 @@ jobs:
           name: coverage
           path: htmlcov
 
+  docs:
+    needs: test
+    runs-on: ubuntu-latest
+    container: "pylegacy/python:3.6-debian-9"
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v1
+      -
+        name: Install doc requirements
+        run: |
+          pip install -r requirements-doc.txt
+      -
+        name: Run sphinx
+        run: |
+          python -m sphinx doc/source public
+      -
+        name: Upload docs artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: docs
+          path: public
+
   upload:
     if: startsWith(github.event.ref, 'refs/tags/v')
     needs: test
