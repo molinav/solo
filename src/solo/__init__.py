@@ -18,6 +18,7 @@
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
 """solo -- Core of the radiative transfer library SSolar-GOA."""
+__all__ = ("radtran",)
 
 from . radtran import radtran
 

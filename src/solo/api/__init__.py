@@ -18,6 +18,7 @@
 # along with solo; if not, see <https://www.gnu.org/licenses/>.
 #
 """Core library classes."""
+__all__ = ("Atmosphere", "Geometry")
 
 from . Atmosphere import Atmosphere
 from . Geometry import Geometry
