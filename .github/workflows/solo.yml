@@ -126,7 +126,7 @@ jobs:
   coverage:
     needs: test
     runs-on: ubuntu-latest
-    container: "pylegacy/python:3.6-debian-9"
+    container: "pylegacy/python:3.8-debian-9"
     steps:
       -
         name: Checkout
@@ -157,7 +157,7 @@ jobs:
   docs:
     needs: test
     runs-on: ubuntu-latest
-    container: "pylegacy/python:3.6-debian-9"
+    container: "pylegacy/python:3.8-debian-9"
     steps:
       -
         name: Checkout
@@ -181,13 +181,13 @@ jobs:
     if: startsWith(github.event.ref, 'refs/tags/v')
     needs: test
     runs-on: ubuntu-latest
-    container: "pylegacy/python:3.6-debian-9"
+    container: "pylegacy/python:3.8-debian-9"
     steps:
       -
         name: Download build artifacts
         uses: actions/download-artifact@v1
         with:
-          name: build-3.6
+          name: build-3.8
           path: dist
       -
         name: Install requirements
