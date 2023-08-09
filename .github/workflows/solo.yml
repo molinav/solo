@@ -167,6 +167,10 @@ jobs:
         run: |
           pip install -r requirements-doc.txt
       -
+        name: Install library requirements
+        run: |
+          pip install -r requirements.txt
+      -
         name: Run sphinx
         run: |
           python -m sphinx doc/source public
