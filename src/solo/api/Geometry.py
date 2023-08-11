@@ -33,74 +33,47 @@ HOUR_TO_SEC = 3600.
 
 
 class Geometry(namedtuple("Geometry", ATTRS)):
-    """Class to define the geometric properties of the atmospheric view.
+    r"""Class to define the geometric properties of the atmospheric view.
 
-    Every instance allows the access to the following properties:
+    During instance creation, the ``mode`` variable must be selected
+    from `{'deg', 'rad'}` to indicate if the variables ``lat``, ``lon``
+    and ``sza`` are provided in degrees or radians, respectively. Once
+    the instance is created, all these variables are stored in radians.
 
-        ngeo : int
-            number of scenarios
+    Attributes
+    ----------
 
-        day : array-like, shape (ngeo,)
-            Julian day ranged from 1 to 366
+    day : array-like
+        Julian day, ranged from 1 to 366
 
-        sec : array-like, (ngeo,)
-            UTC time in seconds (ranged from 0 to 86399)
+    sec : array-like
+        UTC time in seconds, ranged from 0 to 86399
 
-        day_angle : array-like, shape (ngeo,)
-            angle between the Earth-Sun line on 1st January and the same
-            line for the Julian days corresponding to the scenarios,
-            ranged from 0 to 2 * np.pi rad
+    day_angle : array-like
+        angle between the Earth-Sun line on 1st January and the same
+        line for the Julian days corresponding to the geometries,
+        ranged from :math:`0` to :math:`2\pi` rad
 
-        lat : array-like, shape (ngeo,)
-            latitude at the viewing positions in radians, ranged from
-            -np.pi / 2 to +np.pi / 2 rad
+    lat : array-like
+        latitude at the viewing positions in radians,
+        ranged from :math:`-\pi/2` to :math:`+\pi/2` rad
 
-        lon : array-like, shape (ngeo,)
-            longitude at the viewing positions in radians, ranged from
-            -np.pi to +np.pi rad
+    lon : array-like
+        longitude at the viewing positions in radians,
+        ranged from :math:`-\pi` to :math:`+\pi` rad
 
-        sza : array-like, shape (ngeo,)
-            solar zenith angles in radians, ranged from 0 to +np.pi rad
+    sza : array-like
+        solar zenith angles in radians,
+        ranged from :math:`0` to :math:`+\pi` rad
 
-        mu0 : array-like, shape (ngeo,)
-            cosine of the solar zenith angles, ranged from -1 to +1
+    mu0 : array-like
+        cosine of the solar zenith angles,
+        ranged from :math:`-1` to :math:`+1`
     """
 
     def __new__(cls, day, sec=None,  # pylint: disable=too-many-arguments
                 lat=None, lon=None, sza=None, mode="deg"):
-        """Return a new instance of Geometry.
-
-        Receive:
-
-            day : array-like, (ngeo,)
-                Julian day
-            sec : array-like, (ngeo,), optional
-                UTC time in seconds (default None)
-            lat : array-like, (ngeo,), optional
-                latitude at the viewing positions (default None)
-            lon : array-like, (ngeo,), optional
-                longitude at the viewing positions (default None)
-            sza : array-like, (ngeo,), optional
-                solar zenith angles (default None)
-            mode : str, optional
-                if 'deg', input angles are provided in degrees; if 'rad',
-                input angles are given in radians; otherwise, and error
-                is raised (default 'deg'); note that the Geometry
-                instance always stores the angles in radians
-
-        Return:
-
-            geo : Geometry
-                instance of Geometry based on the input parameters
-
-        Raise:
-
-            AttributeError
-                if input arguments have inconsistent or wrong shapes
-            ValueError
-                if mode is not equal to 'deg' or 'rad' or the input
-                arguments are out of range
-        """
+        """Return a new :class:`Geometry` instance."""
 
         # Declare constructor arguments.
         args = [day, sec, lat, lon, sza]
@@ -163,48 +136,48 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         return geo
 
     @property
-    def day_angle(self):
-        """Return the day angle for every Julian day.
-
-        The day angle is defined as the angle between the Earth-Sun line
-        on 1st January and the same line for the Julian days
-        corresponding to the scenarios.
-
-        Return:
-
-            day_angle : array-like, shape (ngeo,)
-                day angle for every scenario's Julian day
-        """
-
-        return (self.day - 1) * DAY_TO_RAD
-
-    @property
     def ngeo(self):
-        """Return the number of geometries stored within the instance."""
+        """Number of geometries stored in the instance."""
 
         shp = np.shape(self.mu0)
         return shp[0] if shp else 1
 
+    @property
+    def day_angle(self):
+        """Day angle for every geometry's Julian day.
+
+        The day angle is defined as the angle between the Earth-Sun line
+        on 1st January and the same line for the Julian days
+        corresponding to the instance geometries.
+        """
+
+        return (self.day - 1) * DAY_TO_RAD
+
     def geometric_factor(self):
-        """Return the factor used to correct the solar TOA irradiance.
+        r"""Return geometric factor used to correct the solar TOA irradiance.
 
-        The solar TOA irradiance E0 is normally provided for a constant
-        Earth-Sun distance, but this distance changes as a function of
-        the day number, so that
+        The solar TOA irradiance :math:`E_0` is normally provided for a
+        reference Earth-Sun distance, but this distance changes as a
+        function of the day number :math:`n_\text{day}`, so that
 
-            E(day) = E0 * (r0 / r(day))**2
+        .. math::
+            E(n_\text{day}) =
+                E_0 \times \left(\dfrac{r_0}{r(n_\text{day})}\right)^2
 
-        where E(day) is the solar TOA irradiance for the given days, E0
-        is the solar TOA irradiance for the reference day, r(day) is the
-        Sun-Earth distance for the given days, and r0 is the Sun-Earth
-        distance for the reference day. This function returns the
-        geometric factor (r0 / r(day))**2 when E0 and r0 are defined for
-        a Sun-Earth distance of 1 AU.
+        where :math:`E(n_\text{day})` is the solar TOA irradiance for
+        the given days, :math:`E_0` is the solar TOA irradiance for the
+        reference day, :math:`r(n_\text{day})` is the Sun-Earth distance
+        for the given days, and :math:`r_0` is the Sun-Earth distance
+        for the reference day. This function returns the geometric
+        factor :math:`(r_0 / r(n_\text{day}))^2` when :math:`E_0`
+        and :math:`r_0` are defined for a Sun-Earth distance of 1 AU.
 
-        Return:
+        Returns
+        -------
 
-            geo_factor : array-like, shape (ngeo,)
-                geometric factor for every scenario
+        geo_factor : array-like
+            geometric factor, with shape ``(ngeo,)``,
+            for every geometry
         """
 
         # Define the coefficients of the Fourier series.
@@ -219,12 +192,14 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         return geo_factor
 
     def declination(self):
-        """Return the Sun declination for the current Geometry instance.
+        """Return the Sun declination for the :class:`Geometry` instance.
 
-        Return:
+        Returns
+        -------
 
-            dec : array-like, shape (ngeo,)
-                Sun declination for every scenario in radians
+        dec : array-like
+            Sun declination in radians, with shape ``(ngeo,)``,
+            for every geometry
         """
 
         # Compute the day of the year in radians.
@@ -244,20 +219,24 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         return dec
 
     def equation_of_time(self):
-        """Return the equation of time for the current Geometry instance.
+        r"""Return the equation of time for the :class:`Geometry` instance.
 
-        The equation of time (ET) computes the difference between the
-        true solar time (TST), i.e. the time which tracks the diurnal
-        motion of the Sun, and the mean solar time (MST), i.e. the time
-        which tracks the motion of a theoretical Sun with noons always
-        24 hours apart, so that
+        The equation of time (:math:`\text{ET}`) computes the difference
+        between the true solar time (:math:`\text{TST}`), i.e. the time
+        which tracks the diurnal motion of the Sun, and the mean solar
+        time (:math:`\text{MST}`), i.e. the time which tracks the motion
+        of a theoretical Sun with noons always 24 hours apart, so that
 
-            TST(day) = MST(day) + ET(day)
+        .. math::
+            \text{TST}(n_\text{day}) =
+                \text{MST}(n_\text{day}) + \text{ET}(n_\text{day})
 
-        Return:
+        Returns
+        -------
 
-            eot : array-like, shape (ngeo,)
-                equation of time values for every scenario in radians
+        eot : array-like
+            equation of time values in radians, with shape ``(ngeo,)``,
+            for every geometry
         """
 
         # Compute the day of the year in radians.
@@ -274,21 +253,24 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         return eot
 
     def compute_sza(self):
-        """Return the solar zenith angles for the given instance.
+        """Return the solar zenith angles for the :class:`Geometry` instance.
 
-        In case that there is already solar zenith angles, they are just
-        returned. If not, they are computed based on the datetime and the
-        geolocation (latitude, longitude).
+        In case there are already solar zenith angles, they are just
+        returned. If not, they are computed based on the datetime and
+        the geolocation (latitude, longitude).
 
-        Return:
+        Returns
+        -------
 
-            sza : array-like, shape (ngeo,)
-                solar zenith angles
+        sza : array-like
+            solar zenith angles in radians, with shape ``(ngeo,)``,
+            for every geometry
 
-        Raise:
+        Raises
+        ------
 
-            ValueError
-                if the latitude, longitude or datetime is missing
+        ValueError
+            if the latitude, longitude or datetime is missing
         """
 
         # Ensure that the solar zenith angle is not already computed, or that
@@ -311,7 +293,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         tst = mst + self.equation_of_time() / HOUR_TO_RAD
         hour_angle = (tst - 12.) * HOUR_TO_RAD
 
-        # Compute 'mu0' and the solar zenith angle.
+        # Compute `mu0` and the solar zenith angle.
         dec = self.declination()
         mu0 = + np.sin(self.lat) * np.sin(dec)                                \
               + np.cos(self.lat) * np.cos(dec) * np.cos(hour_angle)
@@ -321,22 +303,25 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
     @staticmethod
     def from_file(path):
-        """Create Geometry instance from file.
+        """Create :class:`Geometry` instance from file.
 
-        Receive:
+        Parameters
+        ----------
 
-            path : str
-                location of input file
+        path : str
+            location of input file
 
-        Return:
+        Returns
+        -------
 
-            geo : Geometry
-                instance of Geometry based on the input file
+        geo : Geometry
+            new :class:`Geometry` instance based on the input file
 
-        Raise:
+        Raises
+        ------
 
-            ValueError
-                if the input file does not have a valid format
+        ValueError
+            if the input file does not have a valid format
         """
 
         def timestr2num(txt):
@@ -371,7 +356,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 converters = {1: timestr2num}
                 data = np.atleast_2d(np.loadtxt(path, converters=converters))
                 args = data.ravel() if data.shape[0] == 1 else data.T
-            # If it does not work, it may be a single scenario in column form.
+            # If it does not work, it may be a single geometry in column form.
             except (ValueError, IndexError):
                 try:
                     data = np.loadtxt(path, dtype=bytes)
