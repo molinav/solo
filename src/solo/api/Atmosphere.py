@@ -42,71 +42,37 @@ ABSCOEF.flags.writeable = False
 class Atmosphere(namedtuple("Atmosphere", ATTRS)):
     """Class to define the atmospheric properties.
 
-    Every instance allows the access to the following properties:
+    Attributes
+    ----------
 
-        nscen : int
-            number of scenarios
+    p : array-like
+        atmospheric surface pressure in hPa
 
-        p : array-like, shape (nscen,)
-            atmospheric surface pressure in hPa
+    rho : array-like
+        surface albedo
 
-        rho : array-like, shape (nscen,)
-            surface albedo
+    o3 : array-like
+        vertical ozone content in DU
 
-        o3 : array-like, shape (nscen,)
-            vertical ozone content in DU
+    h2o : array-like
+        total amount of water vapour in cm-pr
 
-        h2o : array-like, shape (nscen,)
-            total amount of water vapour in cm-pr
+    alpha : array-like
+        Angstrom alpha parameter
 
-        alpha : array-like, shape (nscen,)
-            Angstrom alpha parameter
+    beta : array-like
+        Angstrom beta parameter
 
-        beta : array-like, shape (nscen,)
-            Angstrom beta parameter
+    w0 : array-like, optional
+        single scattering albedo; if not given, it defaults to 0.90
 
-        w0 : array-like, shape (nscen,)
-            single scattering albedo
-
-        g : array-like, shape (nscen,)
-            aerosol asymmetry parameter
+    g : array-like, optional
+        aerosol asymmetry parameter; if not given, it defaults to 0.85
     """
 
     def __new__(cls, p, rho, o3, h2o,  # pylint: disable=too-many-arguments
                 alpha, beta, w0=None, g=None):
-        """Return a new instance of Atmosphere.
-
-        Receive:
-
-            p : array-like, shape (nscen,)
-                atmospheric surface pressure in hPa
-            rho : array-like, shape (nscen,)
-                surface albedo
-            o3 : array-like, shape (nscen,)
-                vertical ozone content in DU
-            h2o : array-like, shape (nscen,)
-                total amount of water vapour in cm
-            alpha : array-like, shape (nscen,)
-                Angstrom alpha parameter
-            beta : array-like, shape (nscen,)
-                Angstrom beta parameter
-            w0 : array-like, shape (nscen,)
-                single scattering albedo, default given by DEFAULT_W0
-            g : array-like, shape (nscen,)
-                aerosol asymmetry parameter, default given by DEFAULT_G
-
-        Return:
-
-            atm : Atmosphere
-                instance of Atmosphere based on the input parameters
-
-        Raise:
-
-            AttributeError
-                if input arguments have inconsistent or wrong shapes
-            ValueError
-                if the input arguments are out of range
-        """
+        """Return a new :class:`Atmosphere` instance."""
 
         # Ensure that the input arguments have consistent shapes and sizes.
         items = [p, rho, o3, h2o, alpha, beta]
@@ -119,7 +85,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
             raise AttributeError("input arguments must be 0- or 1-dimensional")
 
         # Ensure that the input arguments are within range and set the default
-        # values for 'w0' and 'g' if they were not defined.
+        # values for `w0` and `g` if they were not defined.
         p = np.atleast_1d(p)
         if np.any(p < 0):
             raise ValueError("pressure out of range")
@@ -156,67 +122,77 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
     @property
     def nscen(self):
-        """Return the number of scenarios stored within the instance."""
+        """Number of scenarios stored by the instance."""
 
         return np.shape(self.p)[0]
 
     @property
     def abscoef(self):
-        """Return the molecular absorption coefficients.
+        """Molecular absorption coefficients.
+
+        The returned array of molecular absorption coefficients has
+        shape ``(1 + ncoef, nwvln)``.
 
         The first row stores the wavelengths in nm (from 300 to 2600 nm),
         while the other rows provide the absorption coefficients for the
         following constituents:
 
-            1 : water vapour,
-            2 : water vapour,
-            3 : ozone,
-            4 : molecular oxygen.
-
-        Return:
-
-            abscoef : array-like, shape (1 + ncoef, nwvln)
-                absorption coefficients for different types of molecules
-                as a function of the wavelength in nm, which is stored
-                in the first row
+            1. water vapour,
+            2. water vapour,
+            3. ozone,
+            4. molecular oxygen.
         """
 
         return ABSCOEF
 
     def tau_rayleigh(self, wvln_um, return_albedo=False):
-        """Return the Rayleigh optical depth for the given wavelengths.
+        r"""Return the Rayleigh optical depth for the given wavelengths.
 
-        The optical depth is computed by using Bates's formula:
+        The optical depth is computed by using the Bates' formula:
 
-            tau_ray(wvln) = 1 / (117.2594 * (wvln / um)**4
-                                 - 1.3215 * (wvln / um)**2 + 0.000320
-                                 - 0.000076 * (wvln / um)**(-4)),
+        .. math::
+            \tau_\text{ray}(\lambda) =
+                \dfrac{1}
+                      {117.2594 \times {\lambda_u}^4
+                       - 1.3215 \times {\lambda_u}^2
+                       + 0.000320 - 0.000076 \times {\lambda_u}^{-4}},
 
-        which is obtained for a location with atmospheric pressure equal
-        to 1 atm. For other pressures, the formula must be multiplied by
-        the factor (pressure / 1013 hPa).
+        where :math:`\lambda_u = \lambda / \mu\text{m}` is equal to
+        the wavelength :math:`\lambda` in microns without units, and
+        which is obtained for a reference location with atmospheric
+        pressure :math:`p_0 = 1\text{ atm}`. For other pressures
+        :math:`p`, the formula is multiplied internally by the
+        factor :math:`(p / p_0)`.
 
-        Receive:
+        Parameters
+        ----------
 
-            wvln_um : array-like, shape (nwvln,)
-                wavelengths in microns
-            return_albedo : bool, optional
-                if True, return also the Rayleigh contribution to the
-                atmospheric albedo (default False)
+        wvln_um : array-like
+            wavelengths in microns, with shape ``(nwvln,)``
 
-        Return:
+        return_albedo : bool, optional
+            if True, return also the Rayleigh contribution to the
+            atmospheric albedo
 
-            tau : array-like, shape (nscen, nwvln)
-                Rayleigh optical depth for every scenario and wavelength
-            salb : array-like, shape (nscen, nwvln), optional
-                Rayleigh contribution to the atmospheric albedo
+        Returns
+        -------
 
-        Raise:
+        tau : array-like
+            Rayleigh optical depth, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
 
-            ValueError
-                if the input 'wvln_um' does not have a proper shape
-            TypeError
-                if 'return_albedo' is not a boolean flag
+        salb : array-like, optional
+            Rayleigh contribution to the atmospheric albedo, with shape
+            ``(nscen, nwvln)``, for every scenario and wavelength
+
+        Raises
+        ------
+
+        ValueError
+            if the input ``wvln_um`` does not have a proper shape
+
+        TypeError
+            if ``return_albedo`` is not a boolean flag
         """
 
         # Ensure the shape and type of the input arguments.
@@ -228,7 +204,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         # Define the coefficients used in Bates' formula.
         c = [117.2594, -1.3215, 0.000320, -0.000076]
 
-        # Broadcast arrays before the computation of 'tau'.
+        # Broadcast arrays before the computation of `tau`.
         wvln_um = np.atleast_1d(wvln_um)
         pressure = self.p[:, None]
 
@@ -251,33 +227,45 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         return out if len(out) > 1 else out[0]
 
     def tau_aerosols(self, wvln_um, return_albedo=False):
-        """Return the aerosol optical depth for the given wavelengths.
+        r"""Return the aerosol optical depth for the given wavelengths.
 
         The optical depth is computed by using the Angstrom's formula:
 
-            tau_aer(wvln) = beta * (wvln / um)**(-alpha).
+        .. math::
+            \tau_\text{aer}(\lambda) = \beta \times {\lambda_u}^{-\alpha},
 
-        Receive:
+        where :math:`\lambda_u = \lambda / \mu\text{m}` is equal to
+        the wavelength :math:`\lambda` in microns without units.
 
-            wvln_um : array-like, shape (nwvln,)
-                wavelengths in microns
-            return_albedo : bool, optional
-                if True, return also the aerosol contribution to the
-                atmospheric albedo (default False)
+        Parameters
+        ----------
 
-        Return:
+        wvln_um : array-like
+            wavelengths in microns, with shape ``(nwvln,)``
 
-            tau : array-like, shape (nscen, nwvln)
-                aerosol optical depth for every scenario and wavelength
-            salb : array-like, shape (nscen, nwvln), optional
-                aerosol contribution to the atmospheric albedo
+        return_albedo : bool, optional
+            if True, return also the aerosol contribution to the
+            atmospheric albedo
 
-        Raise:
+        Returns
+        -------
 
-            ValueError
-                if the input 'wvln_um' does not have a proper shape
-            TypeError
-                if 'return_albedo' is not a boolean flag
+        tau : array-like
+            aerosol optical depth, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        salb : array-like, optional
+            aerosol contribution to the atmospheric albedo, with shape
+            ``(nscen, nwvln)``, for every scenario and wavelength
+
+        Raises
+        ------
+
+        ValueError
+            if the input ``wvln_um`` does not have a proper shape
+
+        TypeError
+            if ``return_albedo`` is not a boolean flag
         """
 
         # Ensure the shape and type of the input arguments.
@@ -286,7 +274,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         if not isinstance(return_albedo, bool):
             raise TypeError("'return_albedo' must be a bool")
 
-        # Broadcast arrays before the computation of 'tau'.
+        # Broadcast arrays before the computation of `tau`.
         wvln_um = np.atleast_1d(wvln_um)
         alpha = self.alpha[:, None]
         beta = self.beta[:, None]
@@ -306,59 +294,79 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         return out if len(out) > 1 else out[0]
 
     def trn_rayleigh(self, wvln_um, mu0, return_albedo=False):
-        """Return the Rayleigh transmittances.
+        r"""Return the Rayleigh transmittances.
 
         The direct transmittance is just computed as:
 
-            tdir_ray(wvln) = np.exp(-tau_ray(wvln) / mu0),
+        .. math::
+            T_\text{ray}^\text{dir}(\lambda) =
+                \exp(-\tau_\text{ray}(\lambda) / \mu_0),
 
         while Sobolev's formula is used for the global transmittance:
 
-            tglb_ray(wvln) = ((2/3 + mu0) + (4/3 - mu0) * tdir_ray))
-                             / (2/3 + tau_ray),
+        .. math::
+            T_\text{ray}^\text{glb}(\lambda) =
+                \dfrac{(\frac{2}{3} + \mu_0)
+                       + (\frac{2}{3} - \mu_0)
+                       \times T_\text{ray}^\text{dir}(\lambda)}
+                      {\frac{4}{3} + \tau_\text{ray}(\lambda)},
 
         and the diffuse transmittance is the difference between the
         global and the direct transmittances:
 
-            tdif_ray(wvln) = tglb_ray - tdir_ray.
+        .. math::
+            T_\text{ray}^\text{dif}(\lambda) =
+                T_\text{ray}^\text{glb}(\lambda)
+                - T_\text{ray}^\text{dir}(\lambda).
 
-        Receive:
+        Parameters
+        ----------
 
-            wvln_um : array-like, shape (nwvln,)
-                wavelengths in microns
-            mu0 : array-like, shape (nscen,)
-                cosine of solar zenith angles
-            return_albedo : bool, optional
-                if True, return also the Rayleigh contribution to the
-                atmospheric albedo (default False)
+        wvln_um : array-like
+            wavelengths in microns, with shape ``(nwvln,)``
 
-        Return:
+        mu0 : array-like
+            cosine of solar zenith angles, with shape ``(nscen,)``
 
-            tglb : array-like, shape (nscen, nwvln)
-                Rayleigh global transmittance for every scenario
-                and wavelength
-            tdir : array-like, shape (nscen, nwvln)
-                Rayleigh direct transmittance for every scenario
-                and wavelength
-            tdif : array-like, shape (nscen, nwvln)
-                Rayleigh diffuse transmittance for every scenario
-                and wavelength
-            salb : array-like, shape (nscen, nwvln), optional
-                Rayleigh contribution to the atmospheric albedo
+        return_albedo : bool, optional
+            if True, return also the Rayleigh contribution to the
+            atmospheric albedo
 
-        Raise:
+        Returns
+        -------
 
-            ValueError
-                if the input 'wvln_um' or 'mu0' have invalid shape
-            IndexError
-                if the shape of 'mu0' does not match to the number of
-                scenarios in the Atmosphere instance
-            TypeError
-                if 'return_albedo' is not a boolean flag
+        tglb : array-like
+            Rayleigh global transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        tdir : array-like
+            Rayleigh direct transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        tdif : array-like
+            Rayleigh diffuse transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        salb : array-like, optional
+            Rayleigh contribution to the atmospheric albedo, with shape
+            ``(nscen, nwvln)``, for every scenario and wavelength
+
+        Raises
+        ------
+
+        ValueError
+            if the input ``wvln_um`` or ``mu0`` have invalid shape
+
+        IndexError
+            if the shape of ``mu0`` does not match to the number of
+            scenarios in the :class:`Atmosphere` instance
+
+        TypeError
+            if ``return_albedo`` is not a boolean flag
         """
 
-        # Ensure the shape of 'mu0'. The other arguments are checked when
-        # calling the method 'tau_rayleigh'.
+        # Ensure the shape of `mu0`. The other arguments are checked when
+        # calling the method `tau_rayleigh`.
         if np.ndim(mu0) > 1:
             raise ValueError("'mu0' must be 0- or 1-dimensional")
         mu0 = np.atleast_1d(mu0)[:, None]
@@ -383,69 +391,90 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         return out
 
     def trn_aerosols(self, wvln_um, mu0, return_albedo=False, coupling=False):
-        """Return the aerosol transmittances.
+        r"""Return the aerosol transmittances.
 
         The direct transmittance is just computed as:
 
-            tdir_aer(wvln) = np.exp(-tau_aer(wvln) / mu0),
+        .. math::
+            T_\text{aer}^\text{dir}(\lambda) =
+                \exp(-\tau_\text{aer}(\lambda) / \mu_0),
 
         while Ambartsumian's formulation is used for the global
-        transmittance assuming that w0 is not 1:
+        transmittance assuming that the single-scattering albedo
+        :math:`\omega_0` is not 1:
 
-            tglb_aer(wvln) = ((1 - r0**2) * np.exp(-K * tau_aer / mu0))
-                             / (1 - r0**2 * np.exp(-K * tau_aer / mu0)),
+        .. math::
+            T_\text{aer}^\text{glb}(\lambda) =
+            \dfrac{(1 - r_0^2) \times \exp(-K \times \tau_\text{aer}(\lambda) / \mu_0)}
+                  {1 - r_0^2 \times \exp(-K \times \tau_\text{aer}(\lambda) / \mu_0)},
 
         where:
 
-            K = np.sqrt((1 - w0) * (1 - w0 * g)),
-            r0 = (K - 1 + w0) / (K + 1 - w0),
+        .. math::
+            K = \sqrt{(1 - \omega_0) \times (1 - \omega_0 \times g)},
+        .. math::
+            r_0 = \dfrac{K - 1 + \omega_0}{K + 1 - \omega_0},
 
         and the diffuse transmittance is the difference between the
         global and the direct transmittances:
 
-            tdif_aer(wvln) = tglb_aer - tdir_aer.
+        .. math::
+             T_\text{aer}^\text{dif}(\lambda) =
+                T_\text{aer}^\text{glb}(\lambda)
+                - T_\text{aer}^\text{dir}(\lambda).
 
-        Receive:
+        Parameters
+        ----------
 
-            wvln_um : array-like, shape (nwvln,)
-                wavelengths in microns
-            mu0 : array-like, shape (nscen,)
-                cosine of solar zenith angles
-            return_albedo : bool, optional
-                if True, return also the aerosol contribution to the
-                atmospheric albedo (default False)
-            coupling : bool, optional
-                if True, include Rayleigh-aerosol coupling effect;
-                this parameter is intended only for internal use
-                (default False)
+        wvln_um : array-like
+            wavelengths in microns, with shape ``(nwvln,)``
 
-        Return:
+        mu0 : array-like
+            cosine of solar zenith angles, with shape ``(nscen,)``
 
-            tglb : array-like, shape (nscen, nwvln)
-                aerosol global transmittance for every scenario
-                and wavelength
-            tdir : array-like, shape (nscen, nwvln)
-                aerosol direct transmittance for every scenario
-                and wavelength
-            tdif : array-like, shape (nscen, nwvln)
-                aerosol diffuse transmittance for every scenario
-                and wavelength
-            salb : array-like, shape (nscen, nwvln), optional
-                aerosol contribution to the atmospheric albedo
+        return_albedo : bool, optional
+            if True, return also the aerosol contribution to the
+            atmospheric albedo
 
-        Raise:
+        coupling : bool, optional
+            if True, include Rayleigh-aerosol coupling effect;
+            this parameter is intended only for internal use
 
-            ValueError
-                if the input 'wvln_um' or 'mu0' have invalid shape
-            IndexError
-                if the shape of 'mu0' does not match to the number of
-                scenarios in the Atmosphere instance
-            TypeError
-                if 'return_albedo' or 'coupling' are not boolean flags
+        Returns
+        -------
+
+        tglb : array-like
+            aerosol global transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        tdir : array-like
+            aerosol direct transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        tdif : array-like
+            aerosol diffuse transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        salb : array-like, optional
+            aerosol contribution to the atmospheric albedo, with shape
+            ``(nscen, nwvln)``, for every scenario and wavelength
+
+        Raises
+        ------
+
+        ValueError
+            if the input ``wvln_um`` or ``mu0`` have invalid shape
+
+        IndexError
+            if the shape of ``mu0`` does not match to the number of
+            scenarios in the :class:`Atmosphere` instance
+
+        TypeError
+            if ``return_albedo`` or ``coupling`` are not boolean flags
         """
 
-        # Ensure the type of 'coupling' and the shape of 'mu0'. The other
-        # arguments are already checked when calling the method 'tau_aerosols'.
+        # Ensure the type of `coupling` and the shape of `mu0`. The other
+        # arguments are already checked when calling the method `tau_aerosols`.
         if not isinstance(coupling, bool):
             raise TypeError("'coupling' must be a bool")
         if np.ndim(mu0) > 1:
@@ -490,50 +519,60 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
     def trn_mixture(self, wvln_um, mu0, return_albedo=False, coupling=False):
         """Return the transmittances for the Rayleigh-aerosols mixture.
 
-        The methos allows to consider these transmittance just as a
+        The method allows to consider these transmittances just as a
         combination of independent processes (Rayleigh and aerosols),
         but also as a process with coupling effects.
 
-        Receive:
+        Parameters
+        ----------
 
-            wvln_um : array-like, shape (nwvln,)
-                wavelengths in microns
-            mu0 : array-like, shape (nscen,)
-                cosine of solar zenith angles
-            return_albedo : bool, optional
-                if True, return also the atmospheric albedo
-                (default False)
-            coupling : bool, optional
-                if True, include Rayleigh-aerosol coupling effect
-                (default False)
+        wvln_um : array-like
+            wavelengths in microns, with shape ``(nwvln,)``
 
-        Return:
+        mu0 : array-like
+            cosine of solar zenith angles, with shape ``(nscen,)``
 
-            tglb : array-like, shape (nscen, nwvln)
-                mixture global transmittance for every scenario
-                and wavelength
-            tdir : array-like, shape (nscen, nwvln)
-                mixture direct transmittance for every scenario
-                and wavelength
-            tdif : array-like, shape (nscen, nwvln)
-                mixture diffuse transmittance for every scenario
-                and wavelength
-            salb : array-like, shape (nscen, nwvln), optional
-                atmospheric albedo
+        return_albedo : bool, optional
+            if True, return also the atmospheric albedo
 
-        Raise:
+        coupling : bool, optional
+            if True, include Rayleigh-aerosol coupling effect
 
-            ValueError
-                if the input 'wvln_um' or 'mu0' have invalid shape
-            IndexError
-                if the shape of 'mu0' does not match to the number of
-                scenarios in the Atmosphere instance
-            TypeError
-                if 'return_albedo' or 'coupling' are not boolean flags
+        Returns
+        -------
+
+        tglb : array-like
+            mixture global transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        tdir : array-like
+            mixture direct transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        tdif : array-like
+            mixture diffuse transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        salb : array-like, optional
+            atmospheric albedo, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
+
+        Raises
+        ------
+
+        ValueError
+            if the input ``wvln_um`` or ``mu0`` have invalid shape
+
+        IndexError
+            if the shape of ``mu0`` does not match to the number of
+            scenarios in the Atmosphere instance
+
+        TypeError
+            if ``return_albedo`` or ``coupling`` are not boolean flags
         """
 
-        # Ensure the type of 'coupling'. The other arguments are already
-        # checked when calling the methods 'trn_rayleigh' and 'trn_aerosols'.
+        # Ensure the type of `coupling`. The other arguments are already
+        # checked when calling the methods `trn_rayleigh` and `trn_aerosols`.
         if not isinstance(coupling, bool):
             raise TypeError("'coupling' must be a bool")
 
@@ -563,38 +602,47 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         return out
 
     def trn_water(self, wvln, mu0):
-        """Return the transmittance due to water vapour absorption.
+        r"""Return the transmittance due to water vapour absorption.
 
         The transmittance is computed by using the formula:
 
-            trn(wvln) = np.exp(-(kabs_h2o(wvln) * path_h2o / mu0)**a),
+        .. math::
+            T_\text{H2O}(\lambda) =
+                \exp(-(k_\text{abs}^\text{H2O}(\lambda)
+                       \times L_\text{abs}^\text{H2O} / \mu_0)^a),
 
-        where 'kabs_o2' denotes the water vapour absorption coefficients
-        in cm-1, 'path_h2o' is the water vapour absorption path given in
-        cm, 'mu0' is the cosine of the solar zenith angle and 'a' is an
+        where :math:`k_\text{abs}^\text{H2O}` denotes the water vapour
+        absorption coefficients in cm-1, :math:`L_\text{abs}^\text{H2O}`
+        is the water vapour absorption path given in cm, :math:`\mu_0`
+        is the cosine of the solar zenith angle and :math:`a` is an
         empirical exponent (which depends on the wavelength for the
         water vapour).
 
-        Receive:
+        Parameters
+        ----------
 
-            wvln : array-like, shape (nwvln,)
-                wavelengths in nanometers
-            mu0 : array-like, shape (nscen,)
-                cosines of the solar zenith angle
+        wvln : array-like
+            wavelengths in nanometers, with shape ``(nwvln,)``
 
-        Return:
+        mu0 : array-like
+            cosines of the solar zenith angle, with shape ``(nscen,)``
 
-            trn : array-like, shape (nscen, nwvln)
-                water vapour transmittance for every scenario
-                and wavelength
+        Returns
+        -------
 
-        Raise:
+        trn : array-like
+            water vapour transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
 
-            ValueError
-                if 'wvln' or 'mu0' have invalid shapes
-            IndexError
-                if the shape of 'mu0' does not match to the number of
-                scenarios in the Atmosphere instance
+        Raises
+        ------
+
+        ValueError
+            if ``wvln`` or ``mu0`` have invalid shapes
+
+        IndexError
+            if the shape of ``mu0`` does not match to the number of
+            scenarios in the :class:`Atmosphere` instance
         """
 
         # Ensure the shape and type of the input arguments.
@@ -619,35 +667,45 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         return trn
 
     def trn_ozone(self, wvln, mu0):
-        """Return the transmittance due to ozone absorption.
+        r"""Return the transmittance due to ozone absorption.
 
         The transmittance is computed by using the formula:
 
-            trn_o3(wvln) = np.exp(-kabs_o3(wvln) * path_o3 / mu0),
+        .. math::
+            T_\text{O3}(\lambda) =
+                \exp(-k_\text{abs}^\text{O3}(\lambda)
+                     \times L_\text{abs}^\text{O3} / \mu_0),
 
-        where 'kabs_o3' denotes the ozone absorption coefficients
-        in cm-1, 'path_o3' is the ozone absorption path given in cm
-        and 'mu0' is the cosine of the solar zenith angle.
+        where :math:`k_\text{abs}^\text{O3}` denotes the ozone
+        absorption coefficients in cm-1, :math:`L_\text{abs}^\text{O3}`
+        is the ozone absorption path given in cm and :math:`\mu_0` is
+        the cosine of the solar zenith angle.
 
-        Receive:
+        Parameters
+        ----------
 
-            wvln : array-like, shape (nwvln,)
-                wavelengths in nanometers
-            mu0 : array-like, shape (nscen,)
-                cosines of the solar zenith angle
+        wvln : array-like
+            wavelengths in nanometers, with shape ``(nwvln,)``
 
-        Return:
+        mu0 : array-like
+            cosines of the solar zenith angle, with shape ``(nscen,)``
 
-            trn : array-like, shape (nscen, nwvln)
-                ozone transmittance for every scenario and wavelength
+        Returns
+        -------
 
-        Raise:
+        trn : array-like
+            ozone transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
 
-            ValueError
-                if the input 'wvln' does not have a proper shape
-            IndexError
-                if the shape of 'mu0' does not match to the number of
-                scenarios in the Atmosphere instance
+        Raises
+        ------
+
+        ValueError
+            if the input ``wvln`` does not have a proper shape
+
+        IndexError
+            if the shape of ``mu0`` does not match to the number of
+            scenarios in the :class:`Atmosphere` instance
         """
 
         # Ensure shape of the input arguments.
@@ -674,33 +732,42 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         return trn
 
     def trn_oxygen(self, wvln, mu0):
-        """Return the transmittance due to molecular oxygen absorption.
+        r"""Return the transmittance due to molecular oxygen absorption.
 
         The transmittance is computed by using the formula:
 
-            trn(wvln) = np.exp(-(kabs_o2(wvln) * path_o2 / mu0)**a),
+        .. math::
+            T_\text{O2}(\lambda) =
+                \exp(-(k_\text{abs}^\text{O2}(\lambda)
+                       \times L_\text{abs}^\text{O2} / \mu_0)^a),
 
-        where 'kabs_o2' denotes the oxygen absorption coefficients
-        in cm-1, 'path_o2' is the oxygen absorption path given in cm,
-        'mu0' is the cosine of the solar zenith angle and 'a' is an
-        empirical exponent (equal to 0.5641 for the molecular oxygen).
+        where :math:`k_\text{abs}^\text{O2}` denotes the oxygen
+        absorption coefficients in cm-1, :math:`L_\text{abs}^\text{O2}`
+        is the oxygen absorption path given in cm, :math:`\mu_0` is the
+        cosine of the solar zenith angle and :math:`a` is an empirical
+        exponent (equal to 0.5641 for the molecular oxygen).
 
-        Receive:
+        Parameters
+        ----------
 
-            wvln : array-like, shape (nwvln,)
-                wavelengths in nanometers
-            mu0 : array-like, shape (nscen,)
-                cosines of the solar zenith angle
+        wvln : array-like
+            wavelengths in nanometers, with shape ``(nwvln,)``
 
-        Return:
+        mu0 : array-like
+            cosines of the solar zenith angle, with shape ``(nscen,)``
 
-            trn : array-like, shape (nscen, nwvln)
-                oxygen transmittance for every scenario and wavelength
+        Returns
+        -------
 
-        Raise:
+        trn : array-like
+            oxygen transmittance, with shape ``(nscen, nwvln)``,
+            for every scenario and wavelength
 
-            ValueError
-                if 'wvln' or 'mu0' have invalid shapes
+        Raises
+        ------
+
+        ValueError
+            if ``wvln`` or ``mu0`` have invalid shapes
         """
 
         # Ensure shape of the input arguments.
@@ -727,22 +794,25 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
 
     @staticmethod
     def from_file(path):
-        """Create Atmosphere instance from file.
+        """Create :class:`Atmosphere` instance from file.
 
-        Receive:
+        Parameters
+        ----------
 
-            path : str
-                location of input file
+        path : str
+            location of input file
 
-        Return:
+        Returns
+        -------
 
-            atm : Atmosphere
-                instance of Atmosphere based on the input file
+        atm : Atmosphere
+            new :class:`Atmosphere` instance based on the input file
 
-        Raise:
+        Raises
+        ------
 
-            ValueError
-                if the input file does not have a valid format
+        ValueError
+            if the input file does not have a valid format
         """
 
         data = np.atleast_2d(np.loadtxt(path))

@@ -1,7 +1,7 @@
 # abscoef.dat
 #
-# This file stores the coefficients that define the atmospheric absorption
-# for different components.
+# This file stores the coefficients that define the atmospheric
+# absorption for different components.
 #
 # Column 0: wavelength in nm
 # Column 1: absorption coefficient for water vapour (H2O) in cm-1

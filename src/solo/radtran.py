@@ -30,37 +30,48 @@ import numpy as np
 def radtran(geo, atm, wvln=None, coupling=True):
     """Return the BOA irradiances based on an atmosphere and geometry.
 
-    Receive:
+    Parameters
+    ----------
 
-        geo : Geometry
-            an instance of Geometry containing the relevant information
-            of the geometric parameters
-        atm : Atmosphere
-            an instance of Atmosphere containing the relevant information
-            of the atmospheric components
-        wvln : array-like, shape (nwvln,), optional
-            wavelengths in nanometers (default None, which means that
-            the wavelengths are taken from the same file where the TOA
-            irradiance is stored)
-        coupling : bool, optional
-            if True, include Rayleigh-aerosol coupling effect
-            (default True)
+    geo : Geometry
+        a :class:`~solo.api.Geometry` instance with the
+        relevant geometric parameters
 
-    Return:
+    atm : Atmosphere
+        an :class:`~solo.api.Atmosphere` instance with the
+        relevant atmospheric components
 
-        irr_glb : array-like, shape (nscen, nwvln)
-            BOA global irradiance for every scenario and wavelength
-        irr_dir : array-like, shape (nscen, nwvln)
-            BOA direct irradiance for every scenario and wavelength
-        irr_dif : array-like, shape (nscen, nwvln)
-            BOA diffuse irradiance for every scenario and wavelength
+    wvln : array-like, optional
+        wavelengths in nanometers, with shape ``(nwvln,)``; if
+        not given, the wavelengths are taken from the same file
+        where the TOA irradiances are stored
 
-    Raise:
+    coupling : bool, optional
+        if True, include Rayleigh-aerosol coupling effect
 
-        ValueError
-            if 'wvln' has an invalid shape
-        TypeError
-            if 'coupling' is not a boolean flag
+    Returns
+    -------
+
+    irr_glb : array-like
+        BOA global irradiance, with shape ``(nscen, nwvln)``,
+        for every input scenario and wavelength
+
+    irr_dir : array-like
+        BOA direct irradiance, with shape ``(nscen, nwvln)``,
+        for every input scenario and wavelength
+
+    irr_dif : array-like
+        BOA diffuse irradiance, with shape ``(nscen, nwvln)``,
+        for every input scenario and wavelength
+
+    Raises
+    ------
+
+    ValueError
+        if ``wvln`` has an invalid shape
+
+    TypeError
+        if ``coupling`` is not a boolean flag
     """
 
     # Read the TOA irradiance as a function of the wavelength.
@@ -125,7 +136,7 @@ def _main(argv=None):
     try:
         geo = Geometry.from_file(geo[0])
     except Exception as err:  # pylint: disable=broad-except
-        print("{}\nError: wrong Geometry input file".format(err))
+        print("{0}\nError: wrong Geometry input file".format(err))
         sys.exit(1)
 
     # Parse --atm option.
@@ -139,7 +150,7 @@ def _main(argv=None):
     try:
         atm = Atmosphere.from_file(atm[0])
     except Exception as err:  # pylint: disable=broad-except
-        print("{}\nError: wrong Atmosphere input file".format(err))
+        print("{0}\nError: wrong Atmosphere input file".format(err))
         sys.exit(2)
 
     # Parse --out option.
