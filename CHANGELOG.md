@@ -16,7 +16,7 @@ https://semver.org/spec/v2.0.0.html
 - GitHub workflow.
 - Authors and changelog files.
 - Copyright headers in all source code files.
-- Internal `__eq__` method for `Geometry` instances.
+- Internal `__eq__` and `__ne__` methods for `Geometry` instances.
 
 ### Changed
 - Move test files outside of the package source code folder.

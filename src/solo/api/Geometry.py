@@ -139,9 +139,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
             result = False
         elif not np.allclose(self.day, other.day, equal_nan=True):
             result = False
-        elif not np.allclose(self.sza, other.sza, equal_nan=True):
-            result = False
-        elif not np.allclose(self.mu0, other.mu0, equal_nan=True):
+        elif not (np.allclose(self.sza, other.sza, equal_nan=True) and
+                  np.allclose(self.mu0, other.mu0, equal_nan=True)):
             result = False
         else:
             for key in ("sec", "lat", "lon"):
@@ -153,6 +152,11 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 if not result:
                     break
         return result
+
+    def __ne__(self, other):
+        """Return if two :class:`Geometry` instances are not equal."""
+
+        return not self.__eq__(other)
 
     @property
     def ngeo(self):

@@ -169,6 +169,62 @@ class TestGeometry(unittest.TestCase):
         geo = Geometry(day=366, sza=45, mode="deg")
         self.assertEqual(geo.day_angle, 2 * np.pi)
 
+    def test_eq_true(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sza=45)
+        geo2 = Geometry(day=1, sza=45)
+        self.assertEqual(geo1, geo2)
+
+    def test_eq_false_different_types(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sza=45)
+        geo2 = None
+        self.assertNotEqual(geo1, geo2)
+
+    def test_eq_false_different_sizes(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sza=45)
+        geo2 = Geometry(day=np.array([1, 1]), sza=np.array([45, 45]))
+        self.assertNotEqual(geo1, geo2)
+
+    def test_eq_false_different_days(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sza=45)
+        geo2 = Geometry(day=2, sza=45)
+        self.assertNotEqual(geo1, geo2)
+
+    def test_eq_false_different_secs(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sec=0, sza=45)
+        geo2 = Geometry(day=1, sec=1, sza=45)
+        self.assertNotEqual(geo1, geo2)
+
+    def test_eq_false_different_szas(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sza=45)
+        geo2 = Geometry(day=1, sza=46)
+        self.assertNotEqual(geo1, geo2)
+
+    def test_eq_false_different_lats(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sec=0, lat=45.0, lon=20.0)
+        geo2 = Geometry(day=1, sec=0, lat=46.0, lon=20.0)
+        self.assertNotEqual(geo1, geo2)
+
+    def test_eq_false_different_lons(self):
+        """Test :class`Geometry` equality operator."""
+
+        geo1 = Geometry(day=1, sec=0, lat=45.0, lon=20.0)
+        geo2 = Geometry(day=1, sec=0, lat=45.0, lon=21.0)
+        self.assertNotEqual(geo1, geo2)
+
     def test_geometric_factor_scalar_001(self):
         """Test :meth:`Geometry.geometric_factor` method."""
 
