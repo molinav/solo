@@ -206,10 +206,9 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         day_ang1 = self.day_angle
         day_ang2 = day_ang1 * 2
 
-        geo_factor = c[0] + c[1] * np.cos(day_ang1) + c[2] * np.sin(day_ang1) \
-                          + c[3] * np.cos(day_ang2) + c[4] * np.sin(day_ang2)
-
-        return geo_factor
+        return (+ c[0]
+                + c[1] * np.cos(day_ang1) + c[2] * np.sin(day_ang1)
+                + c[3] * np.cos(day_ang2) + c[4] * np.sin(day_ang2))
 
     def declination(self):
         """Return the Sun declination for the :class:`Geometry` instance.
@@ -232,11 +231,10 @@ class Geometry(namedtuple("Geometry", ATTRS)):
              0.000907, -0.002697, 0.001480]
 
         # Compute the declination in radians.
-        dec = c[0] + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)                \
-                   + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)                \
-                   + c[5] * np.cos(ett3) + c[6] * np.sin(ett3)
-
-        return dec
+        return (+ c[0]
+                + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)
+                + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)
+                + c[5] * np.cos(ett3) + c[6] * np.sin(ett3))
 
     def equation_of_time(self):
         r"""Return the equation of time for the :class:`Geometry` instance.
@@ -267,10 +265,9 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         c = [0.000075, 0.001868, -0.032077, -0.014615, -0.040849]
 
         # Compute the equation of time in radians.
-        eot = c[0] + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)                \
-                   + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)
-
-        return eot
+        return (+ c[0]
+                + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)
+                + c[3] * np.cos(ett2) + c[4] * np.sin(ett2))
 
     def compute_sza(self):
         """Return the solar zenith angles for the :class:`Geometry` instance.
@@ -315,8 +312,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         # Compute `mu0` and the solar zenith angle.
         dec = self.declination()
-        mu0 = + np.sin(self.lat) * np.sin(dec)                                \
-              + np.cos(self.lat) * np.cos(dec) * np.cos(hour_angle)
+        mu0 = (+ np.sin(self.lat) * np.sin(dec)
+               + np.cos(self.lat) * np.cos(dec) * np.cos(hour_angle))
         sza = np.arccos(mu0)
 
         return sza
