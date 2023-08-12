@@ -129,6 +129,31 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         geo = super(Geometry, cls).__new__(*args)
         return geo
 
+    def __eq__(self, other):
+        """Return if two :class:`Geometry` instances are equal."""
+
+        result = True
+        if not isinstance(other, Geometry):
+            result = False
+        elif self.ngeo != other.ngeo:
+            result = False
+        elif not np.allclose(self.day, other.day, equal_nan=True):
+            result = False
+        elif not np.allclose(self.sza, other.sza, equal_nan=True):
+            result = False
+        elif not np.allclose(self.mu0, other.mu0, equal_nan=True):
+            result = False
+        else:
+            for key in ("sec", "lat", "lon"):
+                values = getattr(self, key), getattr(other, key)
+                if any(x is None for x in values):
+                    result = all(x is None for x in values)
+                else:
+                    result = np.allclose(values[0], values[1], equal_nan=True)
+                if not result:
+                    break
+        return result
+
     @property
     def ngeo(self):
         """Number of geometries stored in the instance."""
