@@ -27,10 +27,9 @@ except ImportError:
 
 import numpy as np
 from solo.api import Geometry
-from . import TestSolo
 
 
-class TestGeometry(TestSolo):
+class TestGeometry(unittest.TestCase):
     """Basic tests for the :class:`Geometry` class."""
 
     @staticmethod
