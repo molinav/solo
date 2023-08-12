@@ -40,6 +40,135 @@ class TestGeometry(unittest.TestCase):
         geodir = os.path.join(here, "obj", "geo")
         return os.path.join(geodir, name)
 
+    def test_init_error_size_mismatch(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sza=np.array([45, 60]), mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_ndim(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=np.array([[1]]), sza=np.array([[45]]), mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_mode(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sza=45, mode="foo")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_julian_day_too_low(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=0, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_julian_day_too_big(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=367, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_sec_too_low(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sza=-0.01, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_sec_too_big(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sec=-1, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_lat_too_low(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, lat=-90.1, lon=0.0, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_lat_too_big(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, lat=+90.1, lon=0.0, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_lon_too_low(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, lat=0.0, lon=-180.1, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_lon_too_big(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, lat=0.0, lon=+180.1, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_sza_too_low(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sec=86400, sza=45, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_invalid_sza_too_big(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sza=180.01, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_with_mode_deg(self):
+        """Test successful :class:`Geometry` creation."""
+
+        geo = Geometry(day=1, sec=0, sza=45, mode="deg")
+        self.assertIsInstance(geo, Geometry)
+        self.assertEqual(geo, geo)
+
+    def test_init_with_mode_rad(self):
+        """Test successful :class:`Geometry` creation."""
+
+        geo = Geometry(day=1, sec=0, sza=0.5, mode="rad")
+        self.assertIsInstance(geo, Geometry)
+        self.assertEqual(geo, geo)
+
+    def test_init_with_sza_from_location(self):
+        """Test successful :class:`Geometry` creation."""
+
+        geo = Geometry(day=1, sec=0, lat=0.0, lon=0.0, mode="deg")
+        self.assertIsInstance(geo, Geometry)
+        self.assertEqual(geo, geo)
+
+    def test_ngeo_scalar(self):
+        """Test `ngeo` property of :class:`Geometry` objects."""
+
+        geo = Geometry(day=1, sza=45, mode="deg")
+        self.assertEqual(geo.ngeo, 1)
+
+    def test_ngeo_vector_size_1(self):
+        """Test `ngeo` property of :class:`Geometry` objects."""
+
+        geo = Geometry(day=np.array([1]), sza=np.array([0]), mode="deg")
+        self.assertEqual(geo.ngeo, 1)
+
+    def test_ngeo_vector_size_2(self):
+        """Test `ngeo` property of :class:`Geometry` objects."""
+
+        geo = Geometry(day=np.array([1, 2]), sza=np.array([0, 45]), mode="deg")
+        self.assertEqual(geo.ngeo, 2)
+
+    def test_day_angle_scalar_001(self):
+        """Test `day_angle` property of :class:`Geometry` objects."""
+
+        geo = Geometry(day=1, sza=45, mode="deg")
+        self.assertEqual(geo.day_angle, 0)
+
+    def test_day_angle_scalar_366(self):
+        """Test `day_angle` property of :class:`Geometry` objects."""
+
+        geo = Geometry(day=366, sza=45, mode="deg")
+        self.assertEqual(geo.day_angle, 2 * np.pi)
+
     def _test_load(self, name, expected):
         """Test loading of a :class:`Geometry` file."""
 

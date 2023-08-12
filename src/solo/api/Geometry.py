@@ -75,10 +75,10 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # Ensure that the input arguments have consistent shapes and sizes.
         set_shapes = set(np.shape(x) for x in args if x is not None)
         if len(set_shapes) > 1:
-            raise AttributeError("size mismatch among input arguments")
+            raise ValueError("size mismatch among input arguments")
         set_shapes = list(set_shapes)[0]
         if len(set_shapes) > 1:
-            raise AttributeError("input arguments must be 0- or 1-dimensional")
+            raise ValueError("input arguments must be 0- or 1-dimensional")
 
         # Check that mode receives a valid value ('rad' or 'deg').
         if mode.lower() == "rad":
