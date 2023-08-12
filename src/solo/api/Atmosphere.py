@@ -161,7 +161,7 @@ class Atmosphere(namedtuple("Atmosphere", ATTRS)):
         the wavelength :math:`\lambda` in microns without units, and
         which is obtained for a reference location with atmospheric
         pressure :math:`p_0 = 1\text{ atm}`. For other pressures
-        :math:`p`, the formula is multiplied internally by the
+        :math:`p` the formula is multiplied internally by the
         factor :math:`(p / p_0)`.
 
         Parameters
