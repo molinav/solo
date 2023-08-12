@@ -41,72 +41,66 @@ class TestGeometry(TestSolo):
         geodir = os.path.join(here, "obj", "geo")
         return os.path.join(geodir, name)
 
-    def test_geo11(self):
-        """Test loading of `geo11.dat` from file."""
+    def _test_load(self, name, expected):
+        """Test loading of a :class:`Geometry` file."""
 
-        path = self.get_geometry_filepath("geo11.dat")
-        geo1 = Geometry.from_file(path)
-        geo2 = Geometry(
+        geo = Geometry.from_file(self.get_geometry_filepath(name))
+        self.assertEqual(geo, expected)
+
+    def test_load_geo11(self):
+        """Test loading of a :class:`Geometry` file."""
+
+        expected = Geometry(
             day=152, sec=None, lat=None, lon=None, sza=60, mode="deg")
-        self.assertEqual(geo1, geo2)
+        self._test_load("geo11.dat", expected)
 
-    def test_geo12(self):
-        """Test loading of `geo12.dat` from file."""
+    def test_load_geo12(self):
+        """Test loading of a :class:`Geometry` file."""
 
-        path = self.get_geometry_filepath("geo12.dat")
-        geo1 = Geometry.from_file(path)
-        geo2 = Geometry(
+        expected = Geometry(
             day=152, sec=25311, lat=0.49410271, lon=-0.28797933,
             sza=1.39777933, mode="rad")
-        self.assertEqual(geo1, geo2)
+        self._test_load("geo12.dat", expected)
 
-    def test_geo13(self):
-        """Test loading of `geo13.dat` from file."""
+    def test_load_geo13(self):
+        """Test loading of a :class:`Geometry` file."""
 
-        path = self.get_geometry_filepath("geo13.dat")
-        geo1 = Geometry.from_file(path)
-        geo2 = Geometry(
+        expected = Geometry(
             day=152, sec=43510, lat=0.49410271, lon=-0.28797933,
             sza=0.2546518, mode="rad")
-        self.assertEqual(geo1, geo2)
+        self._test_load("geo13.dat", expected)
 
-    def test_geo21(self):
-        """Test loading of `geo21.dat` from file."""
+    def test_load_geo21(self):
+        """Test loading of a :class:`Geometry` file."""
 
-        path = self.get_geometry_filepath("geo21.dat")
-        geo1 = Geometry.from_file(path)
-        geo2 = Geometry(
+        expected = Geometry(
             day=np.array([152, 152, 152, 152, 153]), sec=None, lat=None,
             lon=None, sza=np.array([60, 50.4, 15.1, 21, 75.]), mode="deg")
-        self.assertEqual(geo1, geo2)
+        self._test_load("geo21.dat", expected)
 
-    def test_geo22(self):
-        """Test loading of `geo22.dat` from file."""
+    def test_load_geo22(self):
+        """Test loading of a :class:`Geometry` file."""
 
-        path = self.get_geometry_filepath("geo22.dat")
-        geo1 = Geometry.from_file(path)
-        geo2 = Geometry(
+        expected = Geometry(
             day=np.array([152, 180, 235]),
             sec=np.array([25311, 5678, 47162]),
             lat=np.array([0.49410271, 0.83950337, 0.00872665]),
             lon=np.array([-0.28797933, 1.31772359, 0.6981317]),
             sza=np.array([1.39777933, 1.17809272, 0.98533964]),
             mode="rad")
-        self.assertEqual(geo1, geo2)
+        self._test_load("geo22.dat", expected)
 
-    def test_geo23(self):
-        """Test loading of `geo23.dat` from file."""
+    def test_load_geo23(self):
+        """Test loading of a :class:`Geometry` file."""
 
-        path = self.get_geometry_filepath("geo23.dat")
-        geo1 = Geometry.from_file(path)
-        geo2 = Geometry(
+        expected = Geometry(
             day=np.array([152, 180, 235]),
             sec=np.array([43510, 47175, 50820]),
             lat=np.array([0.49410271, 0.83950337, 0.00872665]),
             lon=np.array([-0.28797933, 1.31772359, 0.6981317]),
             sza=np.array([0.2546518, 1.28671359, 1.24504354]),
             mode="rad")
-        self.assertEqual(geo1, geo2)
+        self._test_load("geo23.dat", expected)
 
 
 if __name__ == "__main__":
