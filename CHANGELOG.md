@@ -24,6 +24,7 @@ https://semver.org/spec/v2.0.0.html
 - Set library requirements and doc/lint/test requirements.
 - Make source code comply with latest Flake8 and PyLint rules.
 - Fix invalid `str.format` syntax for Python 2.6.
+- Fix library automatic documentation with Sphinx.
 
 ## [1.0.0] - 2019-02-03
 
