@@ -30,17 +30,21 @@ from solo.api import Geometry
 from . import TestSolo
 
 
-UNITTEST_FOLDER = os.path.dirname(__file__)
-GEOMETRY_FOLDER = os.path.join(UNITTEST_FOLDER, "obj", "geo")
-
-
 class TestGeometry(TestSolo):
     """Basic tests for the :class:`Geometry` class."""
+
+    @staticmethod
+    def get_geometry_filepath(name):
+        """Return path to a :class:`Geometry` test file."""
+
+        here = os.path.dirname(__file__)
+        geodir = os.path.join(here, "obj", "geo")
+        return os.path.join(geodir, name)
 
     def test_geo11(self):
         """Test loading of `geo11.dat` from file."""
 
-        path = os.path.join(GEOMETRY_FOLDER, "geo11.dat")
+        path = self.get_geometry_filepath("geo11.dat")
         geo1 = Geometry.from_file(path)
         geo2 = Geometry(
             day=152, sec=None, lat=None, lon=None, sza=60, mode="deg")
@@ -49,7 +53,7 @@ class TestGeometry(TestSolo):
     def test_geo12(self):
         """Test loading of `geo12.dat` from file."""
 
-        path = os.path.join(GEOMETRY_FOLDER, "geo12.dat")
+        path = self.get_geometry_filepath("geo12.dat")
         geo1 = Geometry.from_file(path)
         geo2 = Geometry(
             day=152, sec=25311, lat=0.49410271, lon=-0.28797933,
@@ -59,7 +63,7 @@ class TestGeometry(TestSolo):
     def test_geo13(self):
         """Test loading of `geo13.dat` from file."""
 
-        path = os.path.join(GEOMETRY_FOLDER, "geo13.dat")
+        path = self.get_geometry_filepath("geo13.dat")
         geo1 = Geometry.from_file(path)
         geo2 = Geometry(
             day=152, sec=43510, lat=0.49410271, lon=-0.28797933,
@@ -69,7 +73,7 @@ class TestGeometry(TestSolo):
     def test_geo21(self):
         """Test loading of `geo21.dat` from file."""
 
-        path = os.path.join(GEOMETRY_FOLDER, "geo21.dat")
+        path = self.get_geometry_filepath("geo21.dat")
         geo1 = Geometry.from_file(path)
         geo2 = Geometry(
             day=np.array([152, 152, 152, 152, 153]), sec=None, lat=None,
@@ -79,7 +83,7 @@ class TestGeometry(TestSolo):
     def test_geo22(self):
         """Test loading of `geo22.dat` from file."""
 
-        path = os.path.join(GEOMETRY_FOLDER, "geo22.dat")
+        path = self.get_geometry_filepath("geo22.dat")
         geo1 = Geometry.from_file(path)
         geo2 = Geometry(
             day=np.array([152, 180, 235]),
@@ -93,7 +97,7 @@ class TestGeometry(TestSolo):
     def test_geo23(self):
         """Test loading of `geo23.dat` from file."""
 
-        path = os.path.join(GEOMETRY_FOLDER, "geo23.dat")
+        path = self.get_geometry_filepath("geo23.dat")
         geo1 = Geometry.from_file(path)
         geo2 = Geometry(
             day=np.array([152, 180, 235]),
