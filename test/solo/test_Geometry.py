@@ -187,6 +187,24 @@ class TestGeometry(unittest.TestCase):
         geo = Geometry(day=366, sza=45, mode="deg")
         self.assertTrue(np.allclose(geo.geometric_factor(), 1.035049))
 
+    def test_declination_scalar_001(self):
+        """Test :meth:`Geometry.declination` method."""
+
+        geo = Geometry(day=1, sza=45, mode="deg")
+        self.assertTrue(np.allclose(geo.declination(), -0.401065))
+
+    def test_declination_scalar_180(self):
+        """Test :meth:`Geometry.declination` method."""
+
+        geo = Geometry(day=180, sza=45, mode="deg")
+        self.assertTrue(np.allclose(geo.declination(), +0.405536))
+
+    def test_declination_scalar_366(self):
+        """Test :meth:`Geometry.declination` method."""
+
+        geo = Geometry(day=366, sza=45, mode="deg")
+        self.assertTrue(np.allclose(geo.declination(), -0.401065))
+
     def _test_load(self, name, expected):
         """Test loading of a :class:`Geometry` file."""
 
