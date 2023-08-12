@@ -48,11 +48,6 @@ class Geometry(namedtuple("Geometry", ATTRS)):
     sec : array-like
         UTC time in seconds, ranged from 0 to 86399
 
-    day_angle : array-like
-        angle between the Earth-Sun line on 1st January and the same
-        line for the Julian days corresponding to the geometries,
-        ranged from :math:`0` to :math:`2\pi` rad
-
     lat : array-like
         latitude at the viewing positions in radians,
         ranged from :math:`-\pi/2` to :math:`+\pi/2` rad
@@ -143,11 +138,12 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
     @property
     def day_angle(self):
-        """Day angle for every geometry's Julian day.
+        r"""Day angle for every geometry's Julian day.
 
-        The day angle is defined as the angle between the Earth-Sun line
-        on 1st January and the same line for the Julian days
-        corresponding to the instance geometries.
+        The day angle is defined as the angle between the Earth-Sun
+        line on 1st January and the same line for the Julian days
+        corresponding to the instance geometries, ranged from
+        :math:`0` to :math:`2\pi` rad
         """
 
         return (self.day - 1) * DAY_TO_RAD
