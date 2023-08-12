@@ -118,6 +118,24 @@ class TestGeometry(unittest.TestCase):
         kwds = dict(day=1, sza=180.01, mode="deg")
         self.assertRaises(ValueError, Geometry, **kwds)
 
+    def test_init_error_sza_none_and_missing_sec(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sec=None, lat=45.0, lon=20.0, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_sza_none_and_missing_lat(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sec=0, lat=None, lon=20.0, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
+    def test_init_error_sza_none_and_missing_lon(self):
+        """Test :class:`Geometry` creation error due to wrong inputs."""
+
+        kwds = dict(day=1, sec=0, lat=45.0, lon=None, mode="deg")
+        self.assertRaises(ValueError, Geometry, **kwds)
+
     def test_init_with_mode_deg(self):
         """Test successful :class:`Geometry` creation."""
 
@@ -278,6 +296,12 @@ class TestGeometry(unittest.TestCase):
 
         geo = Geometry(day=366, sza=45, mode="deg")
         self.assertTrue(np.allclose(geo.equation_of_time(), -0.0146219))
+
+    def test_compute_sza(self):
+        """Test :meth:`Geometry.compute_sza` method for existing instance."""
+
+        geo = Geometry(day=1, sza=45, mode="deg")
+        self.assertTrue(np.allclose(geo.compute_sza(), geo.sza))
 
     def _test_load(self, name, expected):
         """Test loading of a :class:`Geometry` file."""
