@@ -19,7 +19,6 @@
 #
 """Geometry class encapsulation."""
 
-from __future__ import division
 from collections import namedtuple
 import numpy as np
 
@@ -33,7 +32,7 @@ HOUR_TO_SEC = 3600.
 
 
 class Geometry(namedtuple("Geometry", ATTRS)):
-    r"""Class to define the geometric properties of the atmospheric view.
+    r"""Class to define the geometric properties of atmospheric views.
 
     During instance creation, the ``mode`` variable must be selected
     from `{'deg', 'rad'}` to indicate if the variables ``lat``, ``lon``
@@ -48,11 +47,6 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
     sec : array-like
         UTC time in seconds, ranged from 0 to 86399
-
-    day_angle : array-like
-        angle between the Earth-Sun line on 1st January and the same
-        line for the Julian days corresponding to the geometries,
-        ranged from :math:`0` to :math:`2\pi` rad
 
     lat : array-like
         latitude at the viewing positions in radians,
@@ -81,10 +75,10 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         # Ensure that the input arguments have consistent shapes and sizes.
         set_shapes = set(np.shape(x) for x in args if x is not None)
         if len(set_shapes) > 1:
-            raise AttributeError("size mismatch among input arguments")
+            raise ValueError("size mismatch among input arguments")
         set_shapes = list(set_shapes)[0]
         if len(set_shapes) > 1:
-            raise AttributeError("input arguments must be 0- or 1-dimensional")
+            raise ValueError("input arguments must be 0- or 1-dimensional")
 
         # Check that mode receives a valid value ('rad' or 'deg').
         if mode.lower() == "rad":
@@ -135,6 +129,35 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         geo = super(Geometry, cls).__new__(*args)
         return geo
 
+    def __eq__(self, other):
+        """Return if two :class:`Geometry` instances are equal."""
+
+        result = True
+        if not isinstance(other, Geometry):
+            result = False
+        elif self.ngeo != other.ngeo:
+            result = False
+        elif not np.allclose(self.day, other.day, equal_nan=True):
+            result = False
+        elif not (np.allclose(self.sza, other.sza, equal_nan=True) and
+                  np.allclose(self.mu0, other.mu0, equal_nan=True)):
+            result = False
+        else:
+            for key in ("sec", "lat", "lon"):
+                values = getattr(self, key), getattr(other, key)
+                if any(x is None for x in values):
+                    result = all(x is None for x in values)
+                else:
+                    result = np.allclose(values[0], values[1], equal_nan=True)
+                if not result:
+                    break
+        return result
+
+    def __ne__(self, other):
+        """Return if two :class:`Geometry` instances are not equal."""
+
+        return not self.__eq__(other)
+
     @property
     def ngeo(self):
         """Number of geometries stored in the instance."""
@@ -144,11 +167,12 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
     @property
     def day_angle(self):
-        """Day angle for every geometry's Julian day.
+        r"""Day angle for every geometry's Julian day.
 
-        The day angle is defined as the angle between the Earth-Sun line
-        on 1st January and the same line for the Julian days
-        corresponding to the instance geometries.
+        The day angle is defined as the angle between the Earth-Sun
+        line on 1st January and the same line for the Julian days
+        corresponding to the instance geometries, ranged from
+        :math:`0` to :math:`2\pi` rad
         """
 
         return (self.day - 1) * DAY_TO_RAD
@@ -186,10 +210,9 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         day_ang1 = self.day_angle
         day_ang2 = day_ang1 * 2
 
-        geo_factor = c[0] + c[1] * np.cos(day_ang1) + c[2] * np.sin(day_ang1) \
-                          + c[3] * np.cos(day_ang2) + c[4] * np.sin(day_ang2)
-
-        return geo_factor
+        return (+ c[0]
+                + c[1] * np.cos(day_ang1) + c[2] * np.sin(day_ang1)
+                + c[3] * np.cos(day_ang2) + c[4] * np.sin(day_ang2))
 
     def declination(self):
         """Return the Sun declination for the :class:`Geometry` instance.
@@ -212,11 +235,10 @@ class Geometry(namedtuple("Geometry", ATTRS)):
              0.000907, -0.002697, 0.001480]
 
         # Compute the declination in radians.
-        dec = c[0] + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)                \
-                   + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)                \
-                   + c[5] * np.cos(ett3) + c[6] * np.sin(ett3)
-
-        return dec
+        return (+ c[0]
+                + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)
+                + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)
+                + c[5] * np.cos(ett3) + c[6] * np.sin(ett3))
 
     def equation_of_time(self):
         r"""Return the equation of time for the :class:`Geometry` instance.
@@ -247,10 +269,9 @@ class Geometry(namedtuple("Geometry", ATTRS)):
         c = [0.000075, 0.001868, -0.032077, -0.014615, -0.040849]
 
         # Compute the equation of time in radians.
-        eot = c[0] + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)                \
-                   + c[3] * np.cos(ett2) + c[4] * np.sin(ett2)
-
-        return eot
+        return (+ c[0]
+                + c[1] * np.cos(ett1) + c[2] * np.sin(ett1)
+                + c[3] * np.cos(ett2) + c[4] * np.sin(ett2))
 
     def compute_sza(self):
         """Return the solar zenith angles for the :class:`Geometry` instance.
@@ -295,8 +316,8 @@ class Geometry(namedtuple("Geometry", ATTRS)):
 
         # Compute `mu0` and the solar zenith angle.
         dec = self.declination()
-        mu0 = + np.sin(self.lat) * np.sin(dec)                                \
-              + np.cos(self.lat) * np.cos(dec) * np.cos(hour_angle)
+        mu0 = (+ np.sin(self.lat) * np.sin(dec)
+               + np.cos(self.lat) * np.cos(dec) * np.cos(hour_angle))
         sza = np.arccos(mu0)
 
         return sza
@@ -334,7 +355,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 raise ValueError("invalid UTC time format")
             # If there is only one number, it is assumed as seconds.
             if len(nums) == 1:
-                return nums[0]
+                return nums[0]  # pragma: no cover
             # If there are 2 or three numbers, they are assumed as
             # [hours, minutes, (seconds)].
             if len(nums) in [2, 3]:

@@ -16,9 +16,13 @@ https://semver.org/spec/v2.0.0.html
 - GitHub workflow.
 - Authors and changelog files.
 - Copyright headers in all source code files.
+- Internal `__eq__` and `__ne__` methods for `Geometry` instances.
 
 ### Changed
 - Move test files outside of the package source code folder.
+- Replace `AttributeError` with `ValueError` in `Geometry` constructor
+  when the inputs have inconsistent sizes or an invalid number of
+  dimensions.
 
 ### Fixed
 - Set library requirements and doc/lint/test requirements.
