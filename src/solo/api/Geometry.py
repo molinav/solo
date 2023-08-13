@@ -32,7 +32,7 @@ HOUR_TO_SEC = 3600.
 
 
 class Geometry(namedtuple("Geometry", ATTRS)):
-    r"""Class to define the geometric properties of the atmospheric view.
+    r"""Class to define the geometric properties of atmospheric views.
 
     During instance creation, the ``mode`` variable must be selected
     from `{'deg', 'rad'}` to indicate if the variables ``lat``, ``lon``
