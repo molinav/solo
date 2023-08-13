@@ -19,7 +19,9 @@
 #
 """Basic tests for the :class:`Geometry` class."""
 
-import os.path
+import io
+import os
+import tempfile
 try:
     import unittest2 as unittest
 except ImportError:
@@ -303,44 +305,44 @@ class TestGeometry(unittest.TestCase):
         geo = Geometry(day=1, sza=45, mode="deg")
         self.assertTrue(np.allclose(geo.compute_sza(), geo.sza))
 
-    def _test_load(self, name, expected):
+    def _test_from_file(self, name, expected):
         """Test loading of a :class:`Geometry` file."""
 
         geo = Geometry.from_file(self.get_geometry_filepath(name))
         self.assertEqual(geo, expected)
 
-    def test_load_geo11(self):
+    def test_from_file_geo11(self):
         """Test loading of a :class:`Geometry` file."""
 
         expected = Geometry(
             day=152, sec=None, lat=None, lon=None, sza=60, mode="deg")
-        self._test_load("geo11.dat", expected)
+        self._test_from_file("geo11.dat", expected)
 
-    def test_load_geo12(self):
+    def test_from_file_geo12(self):
         """Test loading of a :class:`Geometry` file."""
 
         expected = Geometry(
             day=152, sec=25311, lat=0.49410271, lon=-0.28797933,
             sza=1.39777933, mode="rad")
-        self._test_load("geo12.dat", expected)
+        self._test_from_file("geo12.dat", expected)
 
-    def test_load_geo13(self):
+    def test_from_file_geo13(self):
         """Test loading of a :class:`Geometry` file."""
 
         expected = Geometry(
             day=152, sec=43510, lat=0.49410271, lon=-0.28797933,
             sza=0.2546518, mode="rad")
-        self._test_load("geo13.dat", expected)
+        self._test_from_file("geo13.dat", expected)
 
-    def test_load_geo21(self):
+    def test_from_file_geo21(self):
         """Test loading of a :class:`Geometry` file."""
 
         expected = Geometry(
             day=np.array([152, 152, 152, 152, 153]), sec=None, lat=None,
             lon=None, sza=np.array([60, 50.4, 15.1, 21, 75.]), mode="deg")
-        self._test_load("geo21.dat", expected)
+        self._test_from_file("geo21.dat", expected)
 
-    def test_load_geo22(self):
+    def test_from_file_geo22(self):
         """Test loading of a :class:`Geometry` file."""
 
         expected = Geometry(
@@ -350,9 +352,9 @@ class TestGeometry(unittest.TestCase):
             lon=np.array([-0.28797933, 1.31772359, 0.6981317]),
             sza=np.array([1.39777933, 1.17809272, 0.98533964]),
             mode="rad")
-        self._test_load("geo22.dat", expected)
+        self._test_from_file("geo22.dat", expected)
 
-    def test_load_geo23(self):
+    def test_from_file_geo23(self):
         """Test loading of a :class:`Geometry` file."""
 
         expected = Geometry(
@@ -362,7 +364,45 @@ class TestGeometry(unittest.TestCase):
             lon=np.array([-0.28797933, 1.31772359, 0.6981317]),
             sza=np.array([0.2546518, 1.28671359, 1.24504354]),
             mode="rad")
-        self._test_load("geo23.dat", expected)
+        self._test_from_file("geo23.dat", expected)
+
+    def _test_from_file_error(self, lines):
+        """Test :class:`Geometry` loading due to invalid text content."""
+
+        tmpfd, tmppath = tempfile.mkstemp(suffix=".geo")
+        try:
+            # Write the dummy cpt lines into a temporary file.
+            with io.open(tmppath, "wb") as tmpobj:
+                tmpobj.write("\n".join(lines).encode())
+            # Assert that we get the appropriate error.
+            self.assertRaises(ValueError, Geometry.from_file, tmppath)
+        finally:
+            os.close(tmpfd)
+            os.remove(tmppath)
+
+    def test_from_file_error_too_few_columns(self):
+        """Test :class:`Geometry` loading due to invalid row size."""
+
+        lines = ["216"]
+        self._test_from_file_error(lines)
+
+    def test_from_file_error_invalid_row_number_with_single_column(self):
+        """Test :class:`Geometry` loading due to invalid column size."""
+
+        lines = ["216", "12:45:00", "lat"]
+        self._test_from_file_error(lines)
+
+    def test_from_file_error_invalid_utc_format_with_characters(self):
+        """Test :class:`Geometry` loading due to invalid UTC string."""
+
+        lines = ["216", "foo", "45.0", "22.0"]
+        self._test_from_file_error(lines)
+
+    def test_from_file_error_invalid_utc_format_with_many_numbers(self):
+        """Test :class:`Geometry` loading due to invalid UTC string."""
+
+        lines = ["216", "12:45:00:11", "45.0", "22.0"]
+        self._test_from_file_error(lines)
 
 
 if __name__ == "__main__":

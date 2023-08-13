@@ -355,7 +355,7 @@ class Geometry(namedtuple("Geometry", ATTRS)):
                 raise ValueError("invalid UTC time format")
             # If there is only one number, it is assumed as seconds.
             if len(nums) == 1:
-                return nums[0]
+                return nums[0]  # pragma: no cover
             # If there are 2 or three numbers, they are assumed as
             # [hours, minutes, (seconds)].
             if len(nums) in [2, 3]:
