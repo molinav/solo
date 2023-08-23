@@ -182,7 +182,6 @@ jobs:
           path: public
 
   upload:
-    if: startsWith(github.event.ref, 'refs/tags/v')
     needs: test
     runs-on: ubuntu-latest
     container: "pylegacy/python:3.8-debian-9"
