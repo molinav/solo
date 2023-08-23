@@ -45,7 +45,7 @@ def get_version(pkgname):
     """Return package version without importing the file."""
 
     here = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(here, "src", pkgname, "__init__.py")
+    path = os.path.join(*[here, "src"] + pkgname.split(".") + ["__init__.py"])
     with io.open(path, "r", encoding="utf-8") as fd:
         pattern = r"""\n__version__[ ]*=[ ]*["']([^"]+)["']"""
         return re.search(pattern, fd.read()).group(1)
