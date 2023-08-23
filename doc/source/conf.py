@@ -21,7 +21,7 @@ PY2 = (sys.version_info[0] == 2)
 
 # -- Project information -----------------------------------------------------
 
-project = myself.__name__
+project = myself.__name__.rsplit(".", 1)[-1]
 copyright = " 2017-2019, 2023 Víctor Molina García"
 author = "Víctor Molina García"
 
@@ -127,7 +127,7 @@ html_static_path = ["_static"]
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "{0}doc".format(myself)
+htmlhelp_basename = "{0}doc".format(project)
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -147,10 +147,11 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [(
-    master_doc, "{0}.tex".format(myself.__name__),
-    "{0} Documentation".format(myself.__name__),
+    master_doc,
+    "{0}.tex".format(project),
+    "{0} Documentation".format(project),
     author,
-    "manual"
+    "manual",
 )]
 
 
@@ -159,9 +160,11 @@ latex_documents = [(
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [(
-    master_doc, myself.__name__,
-    "{0} Documentation".format(myself.__name__),
-    [author], 1
+    master_doc,
+    project,
+    "{0} Documentation".format(project),
+    [author],
+    1,
 )]
 
 
@@ -172,12 +175,12 @@ man_pages = [(
 #  dir menu entry, description, category)
 texinfo_documents = [(
     master_doc,
-    myself.__name__,
-    "{0} Documentation".format(myself.__name__),
+    project,
+    "{0} Documentation".format(project),
     author,
-    myself.__name__,
+    project,
     myself.__doc__,
-    "Miscellaneous"
+    "Miscellaneous",
 )]
 
 
